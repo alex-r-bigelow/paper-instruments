@@ -1,7 +1,6 @@
 /*globals $, console, tangelo*/
 
-var PREFIX,
-	showVis = false,
+var showVis = false,
 	currentStream = null,
 	streamsToKill = [],
 	canvas,
@@ -197,7 +196,7 @@ function stopTracking() {
 	document.removeEventListener('mouseup', unsetButton);
 }
 
-// Load the current slide
+// Load a slide
 function loadSlide(slideName) {
 	"use strict";
 	var slide = config.slides[slideName],
@@ -221,7 +220,220 @@ function loadSlide(slideName) {
 			"' onmouseup='dragTarget(event, \"" + a.targetSlide + "\", " + sourceIds + ")'></path>";
 	});
 
-	document.getElementById("image").setAttribute("src", PREFIX + config.slides[slideName].image);
+	document.getElementById("image").setAttribute("src", "data/" + slide.image);
+	document.getElementById("areas").innerHTML = areas;
+	currentSlide = slideName;
+	localStorage.setItem("slide", currentSlide);
+	
+	if (showVis === true) {
+		loadHeatmap();
+	}
+}
+
+// Helper classes for editor
+function HotSpot(spotType, configElement) {
+	"use strict";
+	var self = this;
+	
+	self.hash = String(HotSpot.HASH);
+	HotSpot.ALL[self.hash] = self;
+	HotSpot.HASH += 1;
+	
+	self.spotType = spotType;
+	self.configElement = configElement;
+	self.segments = HotSpot.extractSegments(self.configElement.path);
+}
+HotSpot.HASH = 0;
+HotSpot.ALL = {};
+
+HotSpot.SELECTED_HASH = null;
+
+HotSpot.LEFT = "LEFT";
+HotSpot.RIGHT = "RIGHT";
+HotSpot.DRAG_START = "DRAG_START";
+HotSpot.DRAG_STOP = "DRAG_STOP";
+
+HotSpot.extractSegments = function (path) {
+	"use strict";
+	var numbers = path.replace(new RegExp("[a-zA-Z]", "g"), ",").split(","),
+		letterString = path.replace(new RegExp("[0-9]", "g"), ""),
+		letters = letterString.split(","),
+		lowerLetters = letterString.toLowerCase().split(","),
+		segments = [],
+		splicedNumbers,
+		l;
+	
+	// There's an empty entry at the beginning
+	numbers.splice(0, 1);
+	
+	for (l = 0; l < letters.length; l += 1) {
+		if (lowerLetters[l] === "z") {
+			segments.push({
+				segType : letters[l],
+				points : []
+			});
+		} else if (lowerLetters[l] === "m" || lowerLetters[l] === "l" || lowerLetters[l] === "t") {
+			splicedNumbers = numbers.splice(0, 2);
+			segments.push({
+				segType : letters[l],
+				points : [
+					{
+						X : splicedNumbers[0],
+						Y : splicedNumbers[1]
+					}
+				]
+			});
+		} else if (lowerLetters[l] === "s" || lowerLetters[l] === "q") {
+			splicedNumbers = numbers.splice(0, 4);
+			segments.push({
+				segType : letters[l],
+				points : [
+					{
+						X : splicedNumbers[0],
+						Y : splicedNumbers[1]
+					},
+					{
+						X : splicedNumbers[2],
+						Y : splicedNumbers[3]
+					}
+				]
+			});
+		}
+	}
+	return segments;
+};
+
+HotSpot.prototype.generateHandles = function () {
+	"use strict";
+	var self = this,
+		result = "",
+		s,
+		h,
+		p;
+	for (s = 0; s < self.segments.length; s += 1) {
+		for (p = 0; p < self.segments[s].points.length; p += 1) {
+			h = self.segments[s].points[p];
+			result += "<circle cx='" + h.X + "' cy='" + h.Y + "' r='5' " +
+				"onmousedown='HotSpot.ALL[\"" + self.hash + "\"]" +
+				".dragHandle(event, \"" + s + "\", \"" + p + "\");'></circle>";
+		}
+	}
+	return result;
+};
+
+HotSpot.prototype.startDragging = function (event) {
+	"use strict";
+	var self = this;
+	if (HotSpot.SELECTED_HASH !== null) {
+		document.getElementById("hotSpot_" + HotSpot.SELECTED_HASH).removeAttribute("class");
+	}
+	HotSpot.SELECTED_HASH = self.hash;
+	document.getElementById("hotSpot_" + self.hash).setAttribute("class", "selected");
+	document.getElementById("handles").innerHTML = self.generateHandles();
+	console.log(document.getElementById("handles"));
+};
+
+HotSpot.prototype.update = function () {
+	"use strict";
+	var self = this,
+		d = "",
+		s,
+		p,
+		pt;
+	
+	for (s = 0; s < self.segments.length; s += 1) {
+		d += self.segments[s].segType;
+		for (p = 0; p < self.segments[s].points.length; p += 1) {
+			pt = self.segments[s].points[p];
+			d += pt.X + "," + pt.Y;
+		}
+	}
+	
+	self.configElement.path = d;
+	document.getElementById("hotSpot_" + self.hash).setAttribute("d", d);
+};
+
+HotSpot.prototype.dragHandle = function (event, segmentNo, pointNo) {
+	"use strict";
+	var self = this,
+		previousPosition = self.segments[segmentNo].points[pointNo],
+		origin = {
+			X : event.clientX - previousPosition.X,
+			Y : event.clientY - previousPosition.Y
+		},
+		target = event.target,
+		newPos,
+		move = function (event) {
+			event.preventDefault();
+			
+			newPos = {
+				X : event.clientX - origin.X,
+				Y : event.clientY - origin.Y
+			};
+			self.segments[segmentNo].points[pointNo] = newPos;
+			target.setAttribute("cx", newPos.X);
+			target.setAttribute("cy", newPos.Y);
+			
+			self.update();
+			
+			return true;
+		},
+		up = function (event) {
+			document.removeEventListener("mousemove", move);
+			document.removeEventListener("mouseup", up);
+			
+			return move(event);
+		};
+	
+	event.preventDefault();
+	
+	document.addEventListener("mousemove", move);
+	document.addEventListener("mouseup", up);
+	
+	return true;
+};
+
+// Edit a slide
+function editSlide(slideName) {
+	"use strict";
+	var slide = config.slides[slideName],
+		areas = "<svg>",
+		hotSpot;
+	
+	HotSpot.SELECTED_HASH = null;
+	
+	slide.leftClickAreas.forEach(function (a) {
+		hotSpot = new HotSpot(HotSpot.LEFT, a);
+		areas += "<path id='hotSpot_" + hotSpot.hash + "' " +
+			"d='" + a.path + "' " +
+			"onmousedown='HotSpot.ALL[\"" + hotSpot.hash + "\"]" +
+			".startDragging(event);'></path>";
+	});
+	slide.rightClickAreas.forEach(function (a) {
+		hotSpot = new HotSpot(HotSpot.RIGHT, a);
+		areas += "<path id='hotSpot_" + hotSpot.hash + "' " +
+			"d='" + a.path + "' " +
+			"onmousedown='HotSpot.ALL[\"" + hotSpot.hash + "\"]" +
+			".startDragging(event);'></path>";
+	});
+	slide.dragStartAreas.forEach(function (a) {
+		hotSpot = new HotSpot(HotSpot.DRAG_START, a);
+		areas += "<path id='hotSpot_" + hotSpot.hash + "' " +
+			"d='" + a.path + "' " +
+			"onmousedown='HotSpot.ALL[\"" + hotSpot.hash + "\"]" +
+			".startDragging(event);'></path>";
+	});
+	slide.dragTargetAreas.forEach(function (a) {
+		hotSpot = new HotSpot(HotSpot.DRAG_STOP, a);
+		areas += "<path id='hotSpot_" + hotSpot.hash + "' " +
+			"d='" + a.path + "' " +
+			"onmousedown='HotSpot.ALL[\"" + hotSpot.hash + "\"]" +
+			".startDragging(event);'></path>";
+	});
+	
+	areas += "<g id='handles'></g>";
+
+	document.getElementById("image").setAttribute("src", "data/" + slide.image);
 	document.getElementById("areas").innerHTML = areas;
 	currentSlide = slideName;
 	localStorage.setItem("slide", currentSlide);
@@ -258,9 +470,8 @@ function dragTarget(event, targetSlide, sourceIds) {
 	}
 }
 
-function initSession(prefix) {
+function initNavigation() {
 	"use strict";
-	PREFIX = prefix;
 	visContext = document.getElementById('heatmap');
 	if (visContext !== null) {
 		visContext = visContext.getContext('2d');
@@ -278,7 +489,7 @@ function initSession(prefix) {
 	
 	// Load the slide configuration file
 	$.ajax({
-		url: PREFIX + "config.json",
+		url: "data/config.json",
 		success: function (c) {
 			config = c;
 		},
@@ -294,4 +505,34 @@ function initSession(prefix) {
 	}
 	
 	loadSlide(currentSlide);
+}
+
+function initEditor() {
+	"use strict";
+	// Load the slide configuration file
+	$.ajax({
+		url: "data/config.json",
+		success: function (c) {
+			config = c;
+		},
+		error: function (o, e1, e2) {
+			throw e2;
+		},
+		dataType: "json",
+		async: false
+	});
+	if (currentSlide === null) {
+		currentSlide = config.startingSlide;
+		localStorage.setItem("slide", currentSlide);
+	}
+	
+	editSlide(currentSlide);
+}
+
+function downloadConfig() {
+	"use strict";
+	var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(config)));
+    pom.setAttribute('download', 'config.json');
+    pom.click();
 }

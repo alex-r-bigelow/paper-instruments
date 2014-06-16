@@ -6,6 +6,11 @@
 	<script type="application/javascript" src="tangelo.js"></script>
 	<script type="application/javascript" src="script.js"></script>
 	<style>
+	#config {
+		position : absolute;
+		top : 0px;
+		right : 0px;
+	}
 	img, svg {
 		position: absolute;
 		left: 0px;
@@ -14,6 +19,14 @@
 	svg path {
 		fill: #55bada;
 		fill-opacity: 0.5;
+		stroke : none;
+	}
+	svg path.selected {
+		stroke : #55bada;
+		stroke-width : 3px;
+	}
+	svg circle {
+		fill: #55bada;
 	}
 	</style>
 </head>
@@ -21,9 +34,11 @@
 <body>
 	<img id="image" src="" />
 	<div id="areas"></div>
+	<div id="config">
+		<button onclick="downloadConfig();">Generate config.json</button>
+	</div>
 	<script type="application/javascript">
-		initNavigation();
-		startTracking();
+		initEditor();
 	</script>
 </body>
 
