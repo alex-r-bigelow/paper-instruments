@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script type="application/javascript" src="jquery-1.11.0.min.js"></script>
+	<script type="application/javascript" src="tangelo.js"></script>
+	<script type="application/javascript" src="script.js"></script>
+	<style>
+	img, svg, canvas {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+	}
+	svg path {
+		fill: #55bada;
+		fill-opacity: 0.01;
+	}
+	canvas {
+		width: 100%;
+		height: 100%;
+	}
+	</style>
+</head>
+
+<body>
+	<img id="image" src=""/>
+	<canvas id="heatmap"></canvas>
+	<div id="areas"></div>
+	<script type="application/javascript">
+		showVis = true;
+		initSession("data/");
+	</script>
+</body>
+
+</html>

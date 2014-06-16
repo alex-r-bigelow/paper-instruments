@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script type="application/javascript" src="jquery-1.11.0.min.js"></script>
+	<script type="application/javascript" src="tangelo.js"></script>
+	<script type="application/javascript" src="script.js"></script>
+	<style>
+	img, svg {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+	}
+	svg path {
+		fill: #55bada;
+		fill-opacity: 0.5;
+	}
+	</style>
+</head>
+
+<body>
+	<img id="image" src="" />
+	<div id="areas"></div>
+	<script type="application/javascript">
+		initSession("data/");
+		startTracking();
+	</script>
+</body>
+
+</html>
