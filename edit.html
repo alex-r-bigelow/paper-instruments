@@ -2,14 +2,17 @@
 <html>
 
 <head>
-	<script type="application/javascript" src="jquery-1.11.0.min.js"></script>
-	<script type="application/javascript" src="tangelo.js"></script>
-	<script type="application/javascript" src="script.js"></script>
+	<script type="application/javascript" src="lib/jquery-1.11.0.min.js"></script>
+	<script type="application/javascript" src="lib/tangelo-0.6.1.min.js"></script>
+	<script type="application/javascript" src="scripts/common.js"></script>
 	<style>
 	#config {
 		position : absolute;
 		top : 0px;
 		right : 0px;
+	}
+	input.error {
+		background-color: rgba(255, 0, 0, 0.25);
 	}
 	img, svg {
 		position: absolute;
@@ -35,11 +38,42 @@
 	<img id="image" src="" />
 	<div id="areas"></div>
 	<div id="config">
+		<label>Current Slide:</label>
+		<select id="slideSelect"></select><br/>
+		<button onclick="addNewSlide();">Add Slide</button>
+		<hr/>
+		<div id="slideConfig">
+			<label>Name: </label>
+			<input type="text" id="slideName" onchange="updateSlideName(event);"/><br/>
+			<label>Image: </label>
+			<input type="text" id="slideImage" onchange="updateSlideImage(event);"/><br/>
+		</div>
+		<hr/>
+		<div id="hotSpotConfig">
+			<label>Type: </label>
+			<select id="hotSpotType">
+				<option value="LEFT">Left click</option>
+				<option value="RIGHT">Right click</option>
+				<option value="DRAG_START">Drag start</option>
+				<option value="DRAG_STOP">Drag target</option>
+			</select><br/>
+			<span>
+				<label>Hot Spot Id: </label>
+				<input type="text" id="hotSpotName"/><br/>
+			</span>
+			<span>
+				<label>If dragged from: </label>
+				<select multiple id="dragStartSelect"></select><br/>
+			</span>
+			<span>
+				<label>Go to slide: </label>
+				<select id="targetSlideSelect"></select><br/>
+			</span>
+		</div>
+		<hr/>
 		<button onclick="downloadConfig();">Generate config.json</button>
 	</div>
-	<script type="application/javascript">
-		initEditor();
-	</script>
+	<script type="application/javascript" src="scripts/edit.js"></script>
 </body>
 
 </html>

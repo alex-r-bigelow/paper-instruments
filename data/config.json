@@ -3,56 +3,34 @@
 	"slides" : {
 		"Slide 1" : {
 			"image" : "1.png",
-			"leftClickAreas" : [
-				{
-					"path" : "M0,0L50,0L50,50Z",
+            "hotSpots" : [
+                {
+                    "type" : "LEFT",
+                    "path" : "M0,0L50,0L50,50Z",
 					"targetSlide" : "Slide 2"
 				}
-			],
-			"rightClickAreas" : [
-				
-			],
-			"dragStartAreas" : [
-				
-			],
-			"dragTargetAreas" : [
-				
 			]
 		},
 		"Slide 2" : {
 			"image" : "2.png",
-			"leftClickAreas" : [
-				
-			],
-			"rightClickAreas" : [
+			"hotSpots" : [
 				{
+                    "type" : "RIGHT",
 					"path" : "M20,20L30,20L30,30L20,30Z",
 					"targetSlide" : "Slide 3"
 				}
-			],
-			"dragStartAreas" : [
-				
-			],
-			"dragTargetAreas" : [
-				
 			]
 		},
 		"Slide 3" : {
 			"image" : "3.png",
-			"leftClickAreas" : [
-				
-			],
-			"rightClickAreas" : [
-				
-			],
-			"dragStartAreas" : [
+			"hotSpots" : [
 				{
+                    "type" : "DRAG_START",
 					"id" : "a",
 					"path" : "M0,0L0,10L10,10L10,0Z"
-				}
-			],
-			"dragTargetAreas" : [
+				},
 				{
+                    "type" : "DRAG_STOP",
 					"sourceIds" : ["a"],
 					"path" : "M100,100L100,110L110,110L110,100Z",
 					"targetSlide" : "Slide 1"

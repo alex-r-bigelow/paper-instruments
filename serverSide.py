@@ -39,22 +39,23 @@ def resume(userid):
 
 def addMouseData(history):
     try:
-        client.local.results.insert(json.loads(history))
+        # history is actually an array, but insert will still digest it properly
+        client.local.tracking.insert(json.loads(history))
         return "SUCCESS"
     except:
         return "COULDN'T ADD DATA"
 
-def countMouseData(currentSlide):
-    query = {}
+def addTransition(data):
     try:
-        return client.local.results.find(query).count()
+        client.local.transitions.insert(json.loads(data))
+        return "SUCCESS"
     except:
-        return "COULDN'T COUNT DATA"
+        return "COULDN'T ADD DATA"
 
-def startStream(userid, currentSlide):
+def countStream(userid, currentSlide):
     query = {"s":currentSlide}
     try:
-        userStreams[userid] = client.local.results.find(query)
+        userStreams[userid] = client.local.tracking.find(query)
         return userStreams[userid].count()
     except:
         return "COULDN'T GET DATA"
@@ -63,7 +64,8 @@ def pollStream(userid):
     if userStreams.get(userid, None) == None:
         raise StopIteration
     else:
-        yield json.loads(userStreams[userid].next())
+        temp = userStreams[userid].next()
+        yield json.loads(temp)
 
 def run(operation="start", **kwargs):
     if not validConnection:
@@ -75,9 +77,7 @@ def run(operation="start", **kwargs):
         return resume(**kwargs)
     elif operation == "addMouseData":
         return addMouseData(**kwargs)
-    elif operation == "startStream":
-        return startStream(**kwargs)
-    elif operation == "countMouseData":
-        return countMouseData(**kwargs)
+    elif operation == "countStream":
+        return countStream(**kwargs)
     elif operation == "pollStream":
         return pollStream(**kwargs)
