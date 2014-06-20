@@ -241,7 +241,6 @@ HotSpot.prototype.changeType = function (event) {
     } else {
         delete self.configElement.sourceIds;
     }
-	
     self.configElement.spotType = newType;
     self.updateSpotTypeGui();
 };
@@ -294,12 +293,14 @@ HotSpot.prototype.updateSpotTypeGui = function () {
     
     // Set the index of the type menu
     selectElement = document.getElementById("hotSpotType");
+    selectElement.removeAttribute("onchange");
     for (i = 0; i < selectElement.length; i += 1) {
         if (selectElement.options[i].value === self.configElement.spotType) {
             selectElement.selectedIndex = i;
             break;
         }
     }
+    selectElement.setAttribute("onchange", "HotSpot.changeType(event);");
     
     if (self.configElement.spotType === HotSpot.DRAG_START) {
         document.getElementById("idSpan").removeAttribute("hidden");

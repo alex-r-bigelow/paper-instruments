@@ -16,4 +16,4 @@ For tracking to work, you need to do the following on a server (you may need to 
 - edit your prototype by going to edit.html. Images should be placed the data folder. When finished, the replace config.json with the one edit.html generates.
 - (coming soon) see a visualization of the tracking results by going to vis.html
 
-If you don't care about mouse tracking data, it's much easier - just host index.html, script.js, and the data folder wherever you please (as it's only javascript, a Dropbox public folder or github page will work just fine).
+If you don't care about mouse tracking data, it's much easier - just host index.html, and the lib, scripts, and data folders wherever you please (as it's only javascript, a Dropbox public folder or github page will work just fine).
