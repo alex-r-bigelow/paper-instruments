@@ -5,7 +5,7 @@
 			"image" : "1.png",
             "hotSpots" : [
                 {
-                    "type" : "LEFT",
+                    "spotType" : "LEFT",
                     "path" : "M0,0L50,0L50,50Z",
 					"targetSlide" : "Slide 2"
 				}
@@ -15,7 +15,7 @@
 			"image" : "2.png",
 			"hotSpots" : [
 				{
-                    "type" : "RIGHT",
+                    "spotType" : "RIGHT",
 					"path" : "M20,20L30,20L30,30L20,30Z",
 					"targetSlide" : "Slide 3"
 				}
@@ -25,12 +25,12 @@
 			"image" : "3.png",
 			"hotSpots" : [
 				{
-                    "type" : "DRAG_START",
+                    "spotType" : "DRAG_START",
 					"id" : "a",
 					"path" : "M0,0L0,10L10,10L10,0Z"
 				},
 				{
-                    "type" : "DRAG_STOP",
+                    "spotType" : "DRAG_STOP",
 					"sourceIds" : ["a"],
 					"path" : "M100,100L100,110L110,110L110,100Z",
 					"targetSlide" : "Slide 1"

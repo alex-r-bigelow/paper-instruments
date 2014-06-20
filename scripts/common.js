@@ -174,6 +174,23 @@ HotSpot.extractSegments = function (path) {
 	return segments;
 };
 
+HotSpot.replaceId = function (event) {
+    "use strict";
+    var i;
+    config.slides[currentSlide].hotSpots.forEach(function (hotSpot) {
+        if (hotSpot.hasOwnProperty('id') === true &&
+                hotSpot.id === event.target.oldvalue) {
+            hotSpot.id = event.target.value;
+        } else if (hotSpot.hasOwnProperty('sourceIds') === true) {
+            for (i = 0; i < hotSpot.sourceIds; i += 1) {
+                if (hotSpot.sourceIds[i] === event.target.oldvalue) {
+                    hotSpot.sourceIds[i] = event.target.value;
+                }
+            }
+        }
+    });
+};
+
 HotSpot.prototype.generateHandles = function () {
 	"use strict";
 	var self = this,
@@ -193,21 +210,156 @@ HotSpot.prototype.generateHandles = function () {
 	return result;
 };
 
+HotSpot.changeType = function (event) {
+    "use strict";
+    if (HotSpot.SELECTED_HASH !== null) {
+        HotSpot.ALL[HotSpot.SELECTED_HASH].changeType(event);
+    }
+};
+
 HotSpot.prototype.changeType = function (event) {
 	"use strict";
 	var self = this,
         newType = event.target.value;
+    
+    if (newType === HotSpot.DRAG_START) {
+        delete self.configElement.targetSlide;
+        if (self.configElement.hasOwnProperty('id') === false) {
+            self.configElement.id = self.hash;
+        }
+    } else {
+        if (self.configElement.hasOwnProperty('targetSlide') === false) {
+            self.configElement.targetSlide = currentSlide;
+        }
+        delete self.configElement.id;
+    }
+    
+    if (newType === HotSpot.DRAG_STOP) {
+        if (self.configElement.hasOwnProperty('sourceIds') === false) {
+            self.configElement.sourceIds = [];
+        }
+    } else {
+        delete self.configElement.sourceIds;
+    }
 	
-	if (newType === HotSpot.LEFT) {
-		
-	} else if (newType === HotSpot.RIGHT) {
-		
-	} else if (newType === HotSpot.DRAG_START) {
-		
-	} else if (newType === HotSpot.DRAG_STOP) {
-		
-	}
     self.configElement.spotType = newType;
+    self.updateSpotTypeGui();
+};
+
+HotSpot.updateSourceIds = function (event) {
+    "use strict";
+    if (HotSpot.SELECTED_HASH !== null) {
+        HotSpot.ALL[HotSpot.SELECTED_HASH].updateSourceIds(event);
+    }
+};
+
+HotSpot.prototype.updateSourceIds = function (event) {
+    "use strict";
+    var self = this;
+    if (self.configElement.spotType !== HotSpot.DRAG_STOP) {
+        if (DEBUG) {
+            console.warn("attempted to set source ids for non-drag start");
+        }
+        return;
+    }
+    self.configElement.sourceIds = $("#dragStartSelect").val();
+};
+
+HotSpot.updateTargetSlide = function (event) {
+    "use strict";
+    if (HotSpot.SELECTED_HASH !== null) {
+        HotSpot.ALL[HotSpot.SELECTED_HASH].updateTargetSlide(event);
+    }
+};
+
+HotSpot.prototype.updateTargetSlide = function (event) {
+    "use strict";
+    var self = this;
+    if (self.configElement.spotType === HotSpot.DRAG_START) {
+        if (DEBUG) {
+            console.warn("attempted to set target slide for drag start");
+        }
+        return;
+    }
+    self.configElement.targetSlide = document.getElementById("targetSlideSelect").value;
+};
+
+HotSpot.prototype.updateSpotTypeGui = function () {
+    "use strict";
+    var self = this,
+        selectElement,
+        i;
+    
+    document.getElementById("hotSpotConfig").removeAttribute("hidden");
+    
+    // Set the index of the type menu
+    selectElement = document.getElementById("hotSpotType");
+    for (i = 0; i < selectElement.length; i += 1) {
+        if (selectElement.options[i].value === self.configElement.spotType) {
+            selectElement.selectedIndex = i;
+            break;
+        }
+    }
+    
+    if (self.configElement.spotType === HotSpot.DRAG_START) {
+        document.getElementById("idSpan").removeAttribute("hidden");
+        document.getElementById("hotSpotId").value = self.configElement.id;
+        document.getElementById("targetSlideSpan").setAttribute("hidden", "true");
+    } else {
+        document.getElementById("idSpan").setAttribute("hidden", "true");
+        document.getElementById("targetSlideSpan").removeAttribute("hidden");
+        
+        // set the index of the target slide menu
+        selectElement = document.getElementById("targetSlideSelect");
+        for (i = 0; i < selectElement.length; i += 1) {
+            if (selectElement.options[i].value === self.configElement.targetSlide) {
+                selectElement.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    
+    if (self.configElement.spotType === HotSpot.DRAG_STOP) {
+        document.getElementById("dragStartSpan").removeAttribute("hidden");
+        
+        selectElement = document.getElementById("dragStartSelect");
+        
+        // clear out the drag start menu
+        while (selectElement.options.length > 0) {
+            selectElement.remove(0);
+        }
+        
+        // populate it with all source spots on this slide
+        config.slides[currentSlide].hotSpots.forEach(function (hotSpot) {
+            if (hotSpot.hasOwnProperty("id") === true) {
+                var option = document.createElement("option");
+                option.text = hotSpot.id;
+                option.value = hotSpot.id;
+                if (self.configElement.sourceIds.indexOf(hotSpot.id) !== -1) {
+                    option.selected = true;
+                }
+                selectElement.add(option);
+            }
+        });
+    } else {
+        document.getElementById("dragStartSpan").setAttribute("hidden", "true");
+    }
+};
+
+HotSpot.prototype.select = function () {
+    "use strict";
+    var self = this;
+    if (HotSpot.SELECTED_HASH !== null) {
+		document.getElementById("hotSpot_" + HotSpot.SELECTED_HASH).removeAttribute("class");
+	}
+	HotSpot.SELECTED_HASH = self.hash;
+	document.getElementById("hotSpot_" + self.hash).setAttribute("class", "selected");
+    
+	document.getElementById("handles").innerHTML = self.generateHandles();
+    
+	document.getElementById("hotSpotConfig").removeAttribute("hidden");
+	
+    self.updateSpotTypeGui();
 };
 
 HotSpot.prototype.startDragging = function (event) {
@@ -246,19 +398,9 @@ HotSpot.prototype.startDragging = function (event) {
 		};
 	
 	// change the selected HotSpot
-	
-	if (HotSpot.SELECTED_HASH !== null) {
-		document.getElementById("hotSpot_" + HotSpot.SELECTED_HASH).removeAttribute("class");
-	}
-	HotSpot.SELECTED_HASH = self.hash;
-	document.getElementById("hotSpot_" + self.hash).setAttribute("class", "selected");
-	document.getElementById("handles").innerHTML = self.generateHandles();
-	$("#hotSpotConfig input").removeAttr('disabled');
-	$("#hotSpotConfig select").removeAttr('disabled');
-	document.getElementById("hotSpotType").setAttribute("onchange", "HotSpot.ALL['" + self.hash + "'].changeType(event);");
-	
+	self.select();
+    
 	// Now handle dragging the whole shape
-	
 	event.preventDefault();
 	
 	for (s = 0; s < self.segments.length; s += 1) {

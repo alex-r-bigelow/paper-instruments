@@ -29,8 +29,7 @@ function editSlide(slideName) {
 	document.getElementById("slideName").removeAttribute("class");
 	document.getElementById("slideImage").value = slide.image;
 	document.getElementById("hotSpotType").removeAttribute("onchange");
-	$("#hotSpotConfig input").attr('disabled', true);
-	$("#hotSpotConfig select").attr('disabled', true);
+    document.getElementById("hotSpotConfig").setAttribute("hidden", "true");
 }
 
 function createSlideOption(selectId, slideName) {
@@ -56,15 +55,33 @@ function addNewSlide() {
 	
 	config.slides[slideName] = {
 		"image" : config.slides[currentSlide].image,
-		"leftClickAreas" : [],
-		"rightClickAreas" : [],
-		"dragStartAreas" : [],
-		"dragTargetAreas" : []
+		"hotSpots" : []
 	};
 	createSlideOption("slideSelect", slideName);
 	createSlideOption("targetSlideSelect", slideName);
 	
 	editSlide(slideName);
+}
+
+function addHotSpot() {
+    "use strict";
+    var configElement = {
+            spotType : HotSpot.LEFT,
+            path : "M20,20L40,20L40,40L20,40Z",
+            targetSlide : currentSlide
+        };
+    
+    config.slides[currentSlide].hotSpots.push(configElement);
+    editSlide(currentSlide);
+}
+
+function deleteHotSpot() {
+    "use strict";
+    if (HotSpot.SELECTED_HASH === null) {
+        return;
+    }
+    config.slides[currentSlide].hotSpots.pop(HotSpot.ALL[HotSpot.SELECTED_HASH].configElement);
+    editSlide(currentSlide);
 }
 
 function updateSlideName(event) {

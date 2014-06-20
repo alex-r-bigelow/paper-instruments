@@ -13,16 +13,16 @@ function trackSlide(slideName) {
 	
     slide.hotSpots.forEach(function (a) {
         var sourceIds;
-        if (a.type === HotSpot.LEFT) {
+        if (a.spotType === HotSpot.LEFT) {
             areas += "<path d='" + a.path +
                 "' onclick='leftClick(event, \"" + a.targetSlide + "\")'></path>";
-        } else if (a.type === HotSpot.RIGHT) {
+        } else if (a.spotType === HotSpot.RIGHT) {
             areas += "<path d='" + a.path +
                 "' oncontextmenu='rightClick(event, \"" + a.targetSlide + "\")'></path>";
-        } else if (a.type === HotSpot.DRAG_START) {
+        } else if (a.spotType === HotSpot.DRAG_START) {
             areas += "<path d='" + a.path +
                 "' onmousedown='dragStart(event, \"" + a.id + "\")'></path>";
-        } else if (a.type === HotSpot.DRAG_STOP) {
+        } else if (a.spotType === HotSpot.DRAG_STOP) {
             sourceIds = '["' + a.sourceIds.join('","') + '"]';
             areas += "<path d='" + a.path +
                 "' onmouseup='dragTarget(event, \"" + a.targetSlide + "\", " + sourceIds + ")'></path>";

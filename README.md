@@ -13,7 +13,7 @@ For tracking to work, you need to do the following on a server (you may need to 
 - install & start [tangelo](http://tangelo.kitware.com/)
 - clone this repository somewhere inside ~/tangelo_html/
 - send your users to http://your.machines.ip.address:8080/~yourUserName/paper-instruments/index.html (make sure port 8080 is accessible)
+- edit your prototype by going to edit.html. Images should be placed the data folder. When finished, the replace config.json with the one edit.html generates.
 - (coming soon) see a visualization of the tracking results by going to vis.html
-- (coming soon) edit your prototype by going to edit.html. For now, place a set of images in the data folder and edit config.json to link slides / set interaction hotspots. When finished, the editor will let you set these up visually.
 
 If you don't care about mouse tracking data, it's much easier - just host index.html, script.js, and the data folder wherever you please (as it's only javascript, a Dropbox public folder or github page will work just fine).
