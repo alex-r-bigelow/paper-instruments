@@ -1,26 +1,19 @@
-/*globals $, console, tangelo*/
+/*globals $, console, tangelo, userid, currentSlide, DEBUG */
 
 var currentStream = null,
 	streamsToKill = [],
 	canvas,
 	visContext;
 
-function initVis() {
-	"use strict";
-    /*
-    
-    visContext = document.getElementById('heatmap');
-	if (visContext !== null) {
-		visContext = visContext.getContext('2d');
-	}
-    
-	if (currentStream !== null) {
+function initStream() {
+    "use strict";
+    if (currentStream !== null) {
 		streamsToKill.splice(0, 0, currentStream);
 	}
 	$.ajax({
 		url: "serverSide?operation=countStream",
 		data: {
-			userid : id,
+			userid : userid,
 			currentSlide : currentSlide
 		},
 		success: function (numResults) {
@@ -34,14 +27,17 @@ function initVis() {
 			}
 			console.log(numResults);
 			
-			tangelo.stream.start("../serverSide?operation=pollStream&userid=" + id, function (key) {
-				tangelo.stream.run(key, function (p) {
+			tangelo.stream.start("serverSide?operation=pollStream&userid=" + userid, function (key) {
+				console.log(key);
+                tangelo.stream.run(key, function (p) {
 					if (streamsToKill.indexOf(key) !== -1) {
 						streamsToKill.remove(key);
 						return false;
 					}
-					visContext.fillRect(p.x - 5, p.y - 5, 10, 10);
-				}, 100);
+                    console.log(p);
+                    p = JSON.parse(p);
+					visContext.fillRect(p.x - 1, p.y - 1, 2, 2);
+				}, 10);
 			});
 		},
 		error: function (o, message, e) {
@@ -49,6 +45,17 @@ function initVis() {
 				console.warn("error getting tracking data: " + message);
 			}
 		}
-	});*/
+	});
+}
+
+function initVis() {
+	"use strict";
+    
+    visContext = document.getElementById('heatmap');
+	if (visContext !== null) {
+		visContext = visContext.getContext('2d');
+	}
+    
+    initStream();
 }
 initVis();

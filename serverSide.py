@@ -61,11 +61,17 @@ def countStream(userid, currentSlide):
         return "COULDN'T GET DATA"
 
 def pollStream(userid):
+    # return userStreams.get(userid, None)
     if userStreams.get(userid, None) == None:
-        raise StopIteration
+        return
     else:
-        temp = userStreams[userid].next()
-        yield json.loads(temp)
+        try:
+            while True:
+                temp = userStreams[userid].next()
+                temp['_id'] = str(temp['_id'])
+                yield json.dumps(temp)
+        except StopIteration:
+            pass
 
 def run(operation="start", **kwargs):
     if not validConnection:
