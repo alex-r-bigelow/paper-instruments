@@ -1,12 +1,31 @@
-/*globals $, console, tangelo, userid, currentSlide, DEBUG */
+/*globals $, console, tangelo, userid, currentSlide:true, DEBUG, config */
 
 var currentStream = null,
 	streamsToKill = [],
-	canvas,
-	visContext;
+    RADIUS = 10,
+    BUTTON_COLORS = {
+        "-1" : "#999",
+        "0" : "#e41a1c",
+        "1" : "#4daf4a",
+        "2" : "#377eb8",
+        "4" : "#e41a1c"
+    };
 
-function initStream() {
+function traceSlide(slideName) {
     "use strict";
+	var slide = config.slides[slideName],
+        image = $("#image"),
+        canvas = document.getElementById("overlay"),
+        visContext;
+    
+    image.attr("src", "data/" + slide.image);
+    canvas.setAttribute("width", $(window).width());
+    canvas.setAttribute("height", $(window).height());
+    visContext = canvas.getContext('2d');
+    
+	currentSlide = slideName;
+	localStorage.setItem("slide", currentSlide);
+    
     if (currentStream !== null) {
 		streamsToKill.splice(0, 0, currentStream);
 	}
@@ -17,27 +36,27 @@ function initStream() {
 			currentSlide : currentSlide
 		},
 		success: function (numResults) {
-			visContext.clearRect(0, 0, $("heatmap").width(), $("heatmap").height());
-			
 			if (numResults === "COULDN'T GET DATA") {
 				if (DEBUG) {
 					console.warn("error getting tracking data: " + numResults);
 				}
 				return;
 			}
-			console.log(numResults);
+			visContext.globalAlpha = 1 / Math.log(numResults);
 			
 			tangelo.stream.start("serverSide?operation=pollStream&userid=" + userid, function (key) {
-				console.log(key);
                 tangelo.stream.run(key, function (p) {
-					if (streamsToKill.indexOf(key) !== -1) {
-						streamsToKill.remove(key);
+                    var i = streamsToKill.indexOf(key);
+					if (i !== -1 || p === undefined) {
+                        if (i !== -1) {
+						    streamsToKill.splice(streamsToKill.indexOf(key), 1);
+                        }
 						return false;
 					}
-                    console.log(p);
                     p = JSON.parse(p);
-					visContext.fillRect(p.x - 1, p.y - 1, 2, 2);
-				}, 10);
+                    visContext.fillStyle = BUTTON_COLORS[p.b];
+					visContext.fillRect(p.x - RADIUS, p.y - RADIUS, 2 * RADIUS, 2 * RADIUS);
+				}, 1);
 			});
 		},
 		error: function (o, message, e) {
@@ -48,14 +67,4 @@ function initStream() {
 	});
 }
 
-function initVis() {
-	"use strict";
-    
-    visContext = document.getElementById('heatmap');
-	if (visContext !== null) {
-		visContext = visContext.getContext('2d');
-	}
-    
-    initStream();
-}
-initVis();
+traceSlide(currentSlide);
