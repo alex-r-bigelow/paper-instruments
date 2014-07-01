@@ -93,6 +93,7 @@ function startTrackingSession() {
 			console.log('successfully established logging connection');
 		}
 		document.addEventListener('mousemove', logMouse, false);
+        document.addEventListener('mousewheel', logMouse, false);
 	} else {
 		if (DEBUG) {
 			console.warn('could not establish logging connection');
@@ -103,6 +104,7 @@ function startTrackingSession() {
 function stopTrackingSession() {
 	"use strict";
 	document.removeEventListener('mousemove', logMouse);
+    document.removeEventListener('mousewheel', logMouse);
 }
 
 initInteraction(logTransition);

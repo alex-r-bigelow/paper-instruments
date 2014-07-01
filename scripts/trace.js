@@ -4,10 +4,14 @@ var currentStream = null,
 	streamsToKill = [],
     RADIUS = 5,
     BUTTON_COLORS = {
-        "NNN" : "#999",
+        "NNN" : "#999999",
         "YNN" : "#e41a1c",
         "NYN" : "#4daf4a",
-        "NNY" : "#377eb8"
+        "NNY" : "#377eb8",
+        "YYN" : "#984ea3",
+        "YNY" : "#ff7f00",
+        "NYY" : "#a65628",
+        "YYY" : "#f781bf"
     };
 
 function startTrace() {

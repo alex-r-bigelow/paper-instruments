@@ -139,7 +139,8 @@ function interactWithSlide(slideName) {
 	"use strict";
 	var slide = config.slides[slideName],
 		areas = "<svg id='hotSpotAreas' onmousedown='interact(event)'" +
-            " onmousemove='interact(event)' onmouseup='interact(event)'>",
+            " onmousemove='interact(event)' onmouseup='interact(event)'" +
+            " onmousewheel='interact(event)'>",
         i,
         h;
 	
@@ -169,13 +170,19 @@ function interact(event) {
         actions,
         i;
     
-    if (event.button === 0) {
+    if (event.type === "mousedown" && event.button === 0) {
         button = 'LEFT_MOUSE';
     } else if (event.button === 1) {
         button = 'CENTER_MOUSE';
     } else if (event.button === 2) {
         button = 'RIGHT_MOUSE';
-    }
+    } else if (event.hasOwnProperty('wheelDelta') && event.wheelDelta !== 0) {
+        button = 'CENTER_MOUSE';
+    }/* 
+    Firefox only... but it messes with Chrome, so I'll just keep Chrome
+    else if (event.hasOwnProperty('detail') && event.detail !== 0) {
+        button = 'CENTER_MOUSE';
+    }*/
     if (event.target.getAttribute('id') === 'hotSpotAreas') {
         id = "(Empty Space)";
     } else {
@@ -188,9 +195,9 @@ function interact(event) {
         }
     }
     
-    if (INTERACTIONS[button] === null && event.type === "mousedown") {
+    if (INTERACTIONS[button] === null && (event.type === "mousedown" || event.type === "mousewheel")) {
         INTERACTIONS[button] = id;
-    } else if (INTERACTIONS[button] !== null && event.type === "mouseup") {
+    } else if (INTERACTIONS[button] !== null && (event.type === "mouseup" || event.type === "mousewheel")) {
         if (config.slides[currentSlide].hasOwnProperty(button)) {
             actions = config.slides[currentSlide][button];
             for (i = 0; i < actions.length; i += 1) {
@@ -210,7 +217,7 @@ function interact(event) {
 
 function initInteraction(callback) {
 	"use strict";
-    //transitionCallback = callback;
+    transitionCallback = callback;
     
 	// Always suppress the default browser right-click behavior
 	document.addEventListener('contextmenu', function (e) {
@@ -221,12 +228,10 @@ function initInteraction(callback) {
 	document.addEventListener('mousedown', function (e) {
 		e.preventDefault();
 	}, false);
-    
-    //document.addEventListener('mousemove', interact, false);
-    //document.addEventListener('mousedown', interact, false);
-    //document.addEventListener('mouseup', interact, false);
-    //document.body.addEventListener('touchstart', interact, false);
-    //document.body.addEventListener('touchend', interact, false);
+    // Also suppress the default mouse wheel behavior
+    document.addEventListener('mousewheel', function (e) {
+        e.preventDefault();
+    });
 	
 	interactWithSlide(currentSlide);
 }
