@@ -6,6 +6,11 @@
 	<script type="application/javascript" src="lib/tangelo.min.js"></script>
 	<script type="application/javascript" src="scripts/common.js"></script>
 	<style>
+    #slideSelect {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+    }
 	img, svg, canvas {
 		position: absolute;
 		left: 0px;
@@ -22,6 +27,7 @@
 	<img id="image" src=""/>
 	<canvas id="overlay"></canvas>
 	<div id="areas"></div>
+    <select id="slideSelect" onchange="traceSlide(event.target.value)"></select>
 	<script type="application/javascript" src="scripts/trace.js"></script>
 </body>
 

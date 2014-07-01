@@ -1,4 +1,4 @@
-/*globals $, console, config, DEBUG, currentSlide:true, INTERACTIONS */
+/*globals $, console, config, DEBUG, currentSlide:true, INTERACTIONS, createOption */
 
 var currentAction = {
         button : null,
@@ -270,15 +270,6 @@ HotSpot.prototype.dragHandle = function (event, segmentNo, pointNo) {
 };
 
 // General functions
-
-function createOption(selectId, slideName) {
-	"use strict";
-	var op = document.createElement("option");
-	op.value = slideName;
-	op.textContent = slideName;
-	op.id = selectId + slideName;
-	document.getElementById(selectId).appendChild(op);
-}
 
 function switchAction(newAction) {
     "use strict";

@@ -48,7 +48,16 @@ function loadConfig() {
     }
 }
 
-// Helper function
+// Helper functions
+function createOption(selectId, slideName) {
+	"use strict";
+	var op = document.createElement("option");
+	op.value = slideName;
+	op.textContent = slideName;
+	op.id = selectId + slideName;
+	document.getElementById(selectId).appendChild(op);
+}
+
 function connectToServer() {
 	// Start / resume recording mouse actions for this user
 	"use strict";

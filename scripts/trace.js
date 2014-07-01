@@ -1,4 +1,4 @@
-/*globals $, console, tangelo, userid, currentSlide:true, DEBUG, config */
+/*globals $, console, tangelo, userid, currentSlide:true, DEBUG, config, createOption */
 
 var currentStream = null,
 	streamsToKill = [],
@@ -10,24 +10,12 @@ var currentStream = null,
         "NNY" : "#377eb8"
     };
 
-function traceSlide(slideName) {
+function startTrace() {
     "use strict";
-	var slide = config.slides[slideName],
-        image = $("#image"),
+    var image = document.getElementById("image"),
         canvas = document.getElementById("overlay"),
-        visContext;
+        visContext = canvas.getContext('2d');
     
-    image.attr("src", "data/" + slide.image);
-    canvas.setAttribute("width", $(window).width());
-    canvas.setAttribute("height", $(window).height());
-    visContext = canvas.getContext('2d');
-    
-	currentSlide = slideName;
-	localStorage.setItem("slide", currentSlide);
-    
-    if (currentStream !== null) {
-		streamsToKill.splice(0, 0, currentStream);
-	}
 	$.ajax({
 		url: "serverSide?operation=countStream",
 		data: {
@@ -41,6 +29,9 @@ function traceSlide(slideName) {
 				}
 				return;
 			}
+            image.setAttribute("src", "data/" + config.slides[currentSlide].image);
+            canvas.setAttribute("width", $(window).width());
+            canvas.setAttribute("height", $(window).height());
 			visContext.globalAlpha = 1 / Math.log(numResults);
 			
 			tangelo.stream.start("serverSide?operation=pollStream&userid=" + userid, function (key) {
@@ -66,4 +57,32 @@ function traceSlide(slideName) {
 	});
 }
 
-traceSlide(currentSlide);
+function traceSlide(slideName) {
+    "use strict";
+    
+    currentSlide = slideName;
+	localStorage.setItem("slide", currentSlide);
+    
+    if (currentStream !== null) {
+		streamsToKill.splice(0, 0, currentStream);
+        // small delay to let the old stream die out
+        setTimeout(startTrace, 200);
+	} else {
+        startTrace();
+    }
+}
+
+function initTrace() {
+    "use strict";
+    var s;
+    
+    for (s in config.slides) {
+        if (config.slides.hasOwnProperty(s)) {
+            createOption("slideSelect", s);
+        }
+    }
+    
+    traceSlide(currentSlide);
+}
+
+initTrace();
