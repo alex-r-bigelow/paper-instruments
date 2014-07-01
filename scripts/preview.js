@@ -1,96 +1,39 @@
-/*globals $, console, tangelo, config, HotSpot, currentSlide:true, userid, DEBUG, connectedToServer */
+/*globals $, console, config, currentSlide, DEBUG, INTERACTIONS, interactWithSlide, initInteraction */
 
-var history = [],
-    dragStartId = null;
+var slideHistory = [],
+    dragStart = null;
 
 // store the last slide, load the next
-function nextSlide(slideName) {
-	"use strict";
-	var slide = config.slides[slideName],
-		areas = "<svg>";
-	
-    slide.hotSpots.forEach(function (a) {
-        var sourceIds;
-        if (a.spotType === HotSpot.LEFT) {
-            areas += "<path d='" + a.path +
-                "' onclick='leftClick(event, \"" + a.targetSlide + "\")'></path>";
-        } else if (a.spotType === HotSpot.RIGHT) {
-            areas += "<path d='" + a.path +
-                "' oncontextmenu='rightClick(event, \"" + a.targetSlide + "\")'></path>";
-        } else if (a.spotType === HotSpot.DRAG_START) {
-            areas += "<path d='" + a.path +
-                "' onmousedown='dragStart(event, \"" + a.id + "\")'></path>";
-        } else if (a.spotType === HotSpot.DRAG_STOP) {
-            sourceIds = '["' + a.sourceIds.join('","') + '"]';
-            areas += "<path d='" + a.path +
-                "' onmouseup='dragTarget(event, \"" + a.targetSlide + "\", " + sourceIds + ")'></path>";
-        }
-	});
-    
-	document.getElementById("image").setAttribute("src", "data/" + slide.image);
-	document.getElementById("areas").innerHTML = areas;
-    history.push(currentSlide);
-    if (history.length > 1) {
-        document.getElementById("goBack").removeAttribute("disabled");
+function updateHistory(prevSlide, nextSlide) {
+    "use strict";
+    if (slideHistory.length > 0 && nextSlide === slideHistory[slideHistory.length - 1]) {
+        slideHistory.pop();
+    } else {
+        slideHistory.push(prevSlide);
     }
-	currentSlide = slideName;
-	localStorage.setItem("slide", currentSlide);
-}
-
-function leftClick(event, targetSlide) {
-	"use strict";
-	if (event.button === 0) {
-		nextSlide(targetSlide);
-	}
-}
-
-function rightClick(event, targetSlide) {
-	"use strict";
-	if (event.button === 2) {
-		nextSlide(targetSlide);
-	}
-}
-
-function dragStart(event, id) {
-	"use strict";
-	dragStartId = id;
-}
-
-function dragTarget(event, targetSlide, sourceIds) {
-	"use strict";
-	if (sourceIds.indexOf(dragStartId) !== -1) {
-		nextSlide(targetSlide);
-	}
+    if (slideHistory.length > 0) {
+        document.getElementById("goBack").removeAttribute("disabled");
+    } else {
+        document.getElementById("goBack").setAttribute("disabled", "true");
+    }
 }
 
 function goStart(event) {
     "use strict";
-    nextSlide(config.startingSlide);
+    interactWithSlide(config.startingSlide);
+    slideHistory = [];
+    document.getElementById("goBack").setAttribute("disabled", "true");
 }
 
 function goBack(event) {
     "use strict";
-    var lastSlide;
-    if (history.length > 1) {
-        currentSlide = history.pop();
-        if (history.length <= 1) {
-            document.getElementById("goBack").setAttribute("disabled", "true");
-        }
+    var prevSlide;
+    if (slideHistory.length > 0) {
+        prevSlide = slideHistory[slideHistory.length - 1];
+    } else {
+        prevSlide = config.startingSlide;
     }
+    interactWithSlide(prevSlide);
 }
 
-function initPreview() {
-	"use strict";
-	// Always suppress the default browser right-click behavior
-	document.addEventListener('contextmenu', function (e) {
-		e.preventDefault();
-		return false;
-	}, false);
-	// Also suppress selection cursor when dragging
-	document.addEventListener('mousedown', function (e) {
-		e.preventDefault();
-	}, false);
-	
-	nextSlide(currentSlide);
-}
-initPreview();
+initInteraction(updateHistory);

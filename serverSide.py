@@ -45,9 +45,9 @@ def addMouseData(history):
     except:
         return "COULDN'T ADD DATA"
 
-def addTransition(data):
+def addTransition(motion):
     try:
-        client.local.transitions.insert(json.loads(data))
+        client.local.transitions.insert(json.loads(motion))
         return "SUCCESS"
     except:
         return "COULDN'T ADD DATA"
@@ -73,6 +73,15 @@ def pollStream(userid):
         except StopIteration:
             pass
 
+def reset():
+    client.local.participants.drop()
+    client.local.tracking.drop()
+    client.local.transitions.drop()
+    
+    client.local.create_collection('participants')
+    client.local.create_collection('tracking')
+    client.local.create_collection('transitions')
+
 def run(operation="start", **kwargs):
     if not validConnection:
         return "NO DB CONNECTION"
@@ -83,7 +92,12 @@ def run(operation="start", **kwargs):
         return resume(**kwargs)
     elif operation == "addMouseData":
         return addMouseData(**kwargs)
+    elif operation == "addTransition":
+        return addTransition(**kwargs)
     elif operation == "countStream":
         return countStream(**kwargs)
     elif operation == "pollStream":
         return pollStream(**kwargs)
+
+if __name__ == '__main__':
+    reset()

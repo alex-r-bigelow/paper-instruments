@@ -2,7 +2,6 @@
 <html>
 <head>
 	<script type="application/javascript" src="lib/jquery-1.11.0.min.js"></script>
-	<script type="application/javascript" src="lib/tangelo-0.6.1.min.js"></script>
 	<script type="application/javascript" src="scripts/common.js"></script>
 	<style>
 	#config {
@@ -13,9 +12,6 @@
 	input.error {
 		background-color: rgba(255, 0, 0, 0.25);
 	}
-    select[multiple] {
-        width: 100%;
-    }
 	img, svg {
 		position: absolute;
 		left: 0px;
@@ -40,41 +36,52 @@
 	<img id="image" src="" />
 	<div id="areas"></div>
 	<div id="config">
+        <button onclick="addSlide();">Add Slide</button>
+        <button onclick="deleteSlide();">Delete Slide</button><br/>
 		<label>Current Slide:</label>
 		<select id="slideSelect"></select><br/>
-		<button onclick="addNewSlide();">Add Slide</button>
+        
 		<hr/>
-		<div id="slideConfig">
-			<label>Name: </label>
+        
+		<div id="slideNameImageDiv">
+			<label>Name:</label>
 			<input type="text" id="slideName" onchange="updateSlideName(event);"/><br/>
-			<label>Image: </label>
+			<label>Image:</label>
 			<input type="text" id="slideImage" onchange="updateSlideImage(event);"/><br/>
-            <button onclick="addHotSpot();">Add Hot Spot</button>
 		</div>
+        
 		<hr/>
-		<div id="hotSpotConfig">
-			<label>Type: </label>
-			<select id="hotSpotType">
-				<option value="LEFT">Left click</option>
-				<option value="RIGHT">Right click</option>
-				<option value="DRAG_START">Drag start</option>
-				<option value="DRAG_STOP">Drag target</option>
-			</select><br/>
-			<span id="idSpan">
-				<label>Id: </label>
-				<input type="text" id="hotSpotId" onchange="HotSpot.replaceId(event);" onfocus="this.oldvalue = this.value;"/><br/>
-			</span>
-			<span id="dragStartSpan">
-				<label>If dragged from: </label>
-				<select multiple id="dragStartSelect" onchange="HotSpot.updateSourceIds(event);"></select><br/>
-			</span>
-			<span id="targetSlideSpan">
-				<label>Go to slide: </label>
-				<select id="targetSlideSelect" onchange="HotSpot.updateTargetSlide(event);"></select><br/>
-			</span>
-            <button onclick="deleteHotSpot();">Delete Hot Spot</button>
-            <hr/>
-		</div>
+        
+        <button onclick="addHotSpot();">Add Hot Spot</button>
+        <button id="deleteHotSpotButton" onclick="deleteHotSpot();">Delete Hot Spot</button><br/>
+        <label>Hot Spot ID:</label>
+        <input type="text" id="hotSpotId" onchange="HotSpot.replaceId(event);" onfocus="HotSpot.logId(event);"/><br/>
+        
+        <hr/>
+        
+        <label>Interactions:</label>
+        <select id="actionSelect"></select><br/>
+        <button onclick="addAction();">New Interaction</button>
+        <button id="deleteActionButton" onclick="deleteAction();">Delete Interaction</button><br/>
+        
+        <div id="actionDetailsDiv">
+            <label>Button:</label>
+            <select id="actionButtonSelect">
+                <option value="LEFT_MOUSE">Left</option>
+                <option value="CENTER_MOUSE">Center</option>
+                <option value="RIGHT_MOUSE">Right</option>
+            </select><br/>
+
+            <label>Source Hot Spot:</label>
+            <select id="actionSourceSelect"></select><br/>
+            <label>Target Hot Spot:</label>
+            <select id="actionTargetSelect"></select><br/>
+            <label>Destination Slide:</label>
+            <select id="destinationSlideSelect" onchange="HotSpot.updateTargetSlide(event);"></select>
+        </div>
+        
+        <hr/>
+        
 		<button onclick="downloadConfig();">Generate config.json</button>
 	</div>
 	<script type="application/javascript" src="scripts/edit.js"></script>

@@ -1,1 +1,55 @@
-{"startingSlide":"Blank","slides":{"Blank":{"image":"blank.png","hotSpots":[{"spotType":"LEFT","path":"M26,91L75,91L75,141L26,140Z","targetSlide":"Path"},{"spotType":"LEFT","path":"M17,151L84,153L82,205L16,203Z","targetSlide":"Mark"},{"spotType":"RIGHT","path":"M271,488L741,505L741,542L271,549Z","targetSlide":"Data menu"}]},"Data menu":{"image":"data_menu.png","hotSpots":[{"spotType":"LEFT","path":"M679,526L848,522L846,559L680,561Z","targetSlide":"Default axis"}]},"Path":{"image":"path.png","hotSpots":[{"spotType":"RIGHT","path":"M272,489L738,504L738,540L269,546Z","targetSlide":"Path, data menu"},{"spotType":"RIGHT","path":"M216,233L595,160L579,238L149,447Z","targetSlide":"Path, graphics menu"},{"spotType":"LEFT","path":"M19,152L80,153L71,204L22,199Z","targetSlide":"Mark, Path"},{"spotType":"RIGHT","path":"M764,34L900,30L900,64L759,68Z","targetSlide":"Path, graphics menu"}]},"Mark":{"image":"mark.png","hotSpots":[{"spotType":"LEFT","path":"M26,90L81,90L79,144L27,142Z","targetSlide":"Mark, Path"},{"spotType":"RIGHT","path":"M272,492L740,508L737,544L270,548Z","targetSlide":"Mark, data menu"},{"spotType":"RIGHT","path":"M150,71L257,69L234,167L173,173Z","targetSlide":"Mark, graphics menu"},{"spotType":"RIGHT","path":"M765,88L896,90L900,125L760,133Z","targetSlide":"Mark, graphics menu"}]},"Default axis":{"image":"default_axis.png","hotSpots":[{"spotType":"LEFT","path":"M18,152L83,155L75,204L20,201Z","targetSlide":"Mark, default axis"},{"spotType":"DRAG_STOP","path":"M97,7L722,8L735,499L95,501Z","targetSlide":"Curvy axis","sourceIds":["path"]},{"spotType":"DRAG_START","path":"M110,250L679,232L678,260L113,277Z","id":"path"}]},"Path, data menu":{"image":"path_data_menu.png","hotSpots":[{"spotType":"LEFT","path":"M684,587L863,587L868,642L685,647Z","targetSlide":"Curvy axis"}]},"Path, graphics menu":{"image":"path_graphics_menu.png","hotSpots":[{"spotType":"LEFT","path":"M752,350L1013,349L1012,393L752,394Z","targetSlide":"Curvy axis"}]},"Mark, Path":{"image":"mark_path.png","hotSpots":[{"spotType":"RIGHT","path":"M228,230L597,161L570,241L148,446Z","targetSlide":"Path + graphics menu, mark"},{"spotType":"RIGHT","path":"M142,71L259,68L229,164L178,167Z","targetSlide":"Mark + graphics menu, path"},{"spotType":"RIGHT","path":"M763,26L893,26L895,61L758,68Z","targetSlide":"Path + graphics menu, mark"},{"spotType":"RIGHT","path":"M765,91L895,92L897,124L764,131Z","targetSlide":"Mark + graphics menu, path"}]},"Mark, data menu":{"image":"mark_data_menu.png","hotSpots":[{"spotType":"LEFT","path":"M485,526L790,524L790,558L483,567Z","targetSlide":"Mark, default axis"}]},"Mark, graphics menu":{"image":"mark_graphics_menu.png","hotSpots":[{"spotType":"LEFT","path":"M525,165L782,165L782,209L527,211Z","targetSlide":"Master Mark"}]},"Mark, default axis":{"image":"mark_default_axis.png","hotSpots":[{"spotType":"DRAG_STOP","path":"M90,5L724,5L738,508L95,506Z","targetSlide":"Mark, Curvy axis","sourceIds":["axis"]},{"spotType":"DRAG_START","path":"M114,251L673,234L675,258L114,271Z","id":"axis"},{"spotType":"DRAG_START","path":"M149,80L259,73L233,171L180,173Z","id":"mark"},{"spotType":"DRAG_STOP","path":"M113,225L134,225L138,329L113,335Z","targetSlide":"1 Mark + binding menu, default axis","sourceIds":["mark"]},{"spotType":"DRAG_STOP","path":"M404,232L424,232L439,281L381,282Z","targetSlide":"2 Mark + binding menu, default axis","sourceIds":["mark"]},{"spotType":"DRAG_STOP","path":"M538,230L558,230L573,283L510,283Z","targetSlide":"3 Mark + binding menu, default axis","sourceIds":["mark"]},{"spotType":"DRAG_STOP","path":"M613,234L633,234L649,281L588,285Z","targetSlide":"4 Mark + binding menu, default axis","sourceIds":["mark"]},{"spotType":"DRAG_STOP","path":"M656,209L676,209L678,325L631,321Z","targetSlide":"5 Mark binding menu, default axis","sourceIds":["mark"]},{"spotType":"RIGHT","path":"M154,70L266,65L234,166L181,163Z","targetSlide":"Mark + graphics menu, default axis"}]},"Curvy axis":{"image":"curvy_axis.png","hotSpots":[]},"Path + graphics menu, mark":{"image":"path_graphics_menu_mark.png","hotSpots":[]},"Mark + graphics menu, path":{"image":"mark_graphics_menu_path.png","hotSpots":[]},"Master Mark":{"image":"master_mark.png","hotSpots":[]},"Mark, path + data menu":{"image":"mark_path_data_menu.png","hotSpots":[]},"Mark + graphics menu, default axis":{"image":"mark_graphics_menu_default_axis.png","hotSpots":[]},"Mark, Curvy axis":{"image":"mark_curvy_axis.png","hotSpots":[]},"Master Mark + master menu":{"image":"master_mark_master_menu.png","hotSpots":[]},"Master Mark, path":{"image":"master_mark_path.png","hotSpots":[]},"1 Mark + binding menu, default axis":{"image":"1_mark_binding_menu_default_axis.png","hotSpots":[]},"2 Mark + binding menu, default axis":{"image":"2_mark_binding_menu_default_axis.png","hotSpots":[]},"3 Mark + binding menu, default axis":{"image":"3_mark_binding_menu_default_axis.png","hotSpots":[]},"4 Mark + binding menu, default axis":{"image":"4_mark_binding_menu_default_axis.png","hotSpots":[]},"5 Mark binding menu, default axis":{"image":"5_mark_binding_menu_default_axis.png","hotSpots":[]},"Master Mark, default axis":{"image":"master_mark_default_axis.png","hotSpots":[]},"Mark + graphics menu, curvy axis":{"image":"mark_graphics_menu_curvy_axis.png","hotSpots":[]},"1 Mark + binding menu, curvy axis":{"image":"1_mark_binding_menu_curvy_axis.png","hotSpots":[]},"2 Mark + binding menu, curvy axis":{"image":"2_mark_binding_menu_curvy_axis.png","hotSpots":[]},"3 Mark + binding menu, curvy axis":{"image":"3_mark_binding_menu_curvy_axis.png","hotSpots":[]},"4 Mark + binding menu, curvy axis":{"image":"4_mark_binding_menu_curvy_axis.png","hotSpots":[]},"5 Mark + binding menu, curvy axis":{"image":"5_mark_binding_menu_curvy_axis.png","hotSpots":[]},"Master Mark, path + graphics menu":{"image":"master_mark_path_graphics_menu.png","hotSpots":[]},"Master Mark, path + data menu":{"image":"master_mark_path_data_menu.png","hotSpots":[]},"Master Mark + master menu, default axis":{"image":"master_mark_master_menu_default_axis.png","hotSpots":[]},"Master Mark, curvy axis":{"image":"master_mark_curvy_axis.png","hotSpots":[]},"Bound Marks, default axis":{"image":"bound_marks_default_axis.png","hotSpots":[]},"Master Mark + master menu, curvy axis":{"image":"master_mark_master_menu_curvy_axis.png","hotSpots":[]},"Bound Marks, curvy axis":{"image":"bound_marks_curvy_axis.png","hotSpots":[]}}}
+{
+	"startingSlide" : "Slide 1",
+	"slides" : {
+		"Slide 1" : {
+			"image" : "1.png",
+            "hotSpots" : [
+                {
+                    "id" : "triangle",
+                    "path" : "M0,0L50,0L50,50Z"
+				}
+			],
+            "LEFT_MOUSE" : [
+                {
+                    "source" : "triangle",
+                    "destination" : "Slide 2"
+                }
+            ]
+		},
+		"Slide 2" : {
+			"image" : "2.png",
+			"hotSpots" : [
+				{
+                    "id" : "square",
+					"path" : "M20,20L30,20L30,30L20,30Z"
+				}
+			],
+            "RIGHT_MOUSE" : [
+                {
+                    "source" : "square",
+                    "destination" : "Slide 3"
+                }
+            ]
+		},
+		"Slide 3" : {
+			"image" : "3.png",
+			"hotSpots" : [
+				{
+					"id" : "start",
+					"path" : "M0,0L0,10L10,10L10,0Z"
+				},
+				{
+                    "id" : "stop",
+					"path" : "M100,100L100,110L110,110L110,100Z"
+				}
+			],
+            "LEFT_MOUSE" : [
+                {
+                    "source" : "start",
+                    "target" : "stop",
+                    "destination" : "Slide 1"
+                }
+            ]
+		}
+	}
+}

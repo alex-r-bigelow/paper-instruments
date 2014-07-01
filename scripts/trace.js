@@ -4,11 +4,10 @@ var currentStream = null,
 	streamsToKill = [],
     RADIUS = 10,
     BUTTON_COLORS = {
-        "-1" : "#999",
-        "0" : "#e41a1c",
-        "1" : "#4daf4a",
-        "2" : "#377eb8",
-        "4" : "#e41a1c"
+        "NNN" : "#999",
+        "YNN" : "#e41a1c",
+        "NYN" : "#4daf4a",
+        "NNY" : "#377eb8"
     };
 
 function traceSlide(slideName) {
