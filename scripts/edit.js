@@ -530,10 +530,14 @@ function addHotSpot() {
 
 function deleteHotSpot() {
     "use strict";
+    var element,
+        index;
     if (HotSpot.SELECTED_HASH === null) {
         return;
     }
-    config.slides[currentSlide].hotSpots.pop(HotSpot.ALL[HotSpot.SELECTED_HASH].configElement);
+    element = HotSpot.ALL[HotSpot.SELECTED_HASH].configElement;
+    index = config.slides[currentSlide].hotSpots.indexOf(element);
+    config.slides[currentSlide].hotSpots.splice(index, 1);
     editSlide(currentSlide);
 }
 

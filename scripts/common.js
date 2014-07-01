@@ -170,7 +170,7 @@ function interact(event) {
         actions,
         i;
     
-    if (event.type === "mousedown" && event.button === 0) {
+    if ((event.type === "mousedown" || event.type === "mouseup") && event.button === 0) {
         button = 'LEFT_MOUSE';
     } else if (event.button === 1) {
         button = 'CENTER_MOUSE';
