@@ -1,4 +1,4 @@
-/*globals $, console, config, DEBUG, currentSlide:true, INTERACTIONS, createOption */
+/*globals $, console, config, DEBUG, currentSlide:true, INTERACTIONS, createOption, editSlide */
 
 var currentAction = {
         button : null,
@@ -96,7 +96,7 @@ HotSpot.replaceId = function (event) {
                 action.target = newId;
             }
         };
-    if (newId === "(Same as source)" || newId === "(Empty Space)") {
+    if (newId.indexOf(" ") !== -1 || newId === "(Same as source)" || newId === "(Empty Space)") {
         event.target.value = oldId;
         event.target.setAttribute("class", "error");
         return;
@@ -117,6 +117,7 @@ HotSpot.replaceId = function (event) {
             config.slides[currentSlide][a].forEach(helper);
         }
     }
+    editSlide(currentSlide);
 };
 
 HotSpot.prototype.generateHandles = function () {
@@ -419,6 +420,11 @@ function editSlide(slideName) {
             }
         }
     }
+        
+    // finalize
+	currentSlide = slideName;
+	localStorage.setItem("slide", slideName);
+    
     if (foundIndex === false) {
         switchAction(null);
     } else {
@@ -426,10 +432,6 @@ function editSlide(slideName) {
         switchAction(currentAction);
     }
     actionSelect.setAttribute("onchange", "switchAction(event.target.value);");
-    
-    // finalize
-	currentSlide = slideName;
-	localStorage.setItem("slide", slideName);
 }
 
 function changeButton(event) {
@@ -445,7 +447,7 @@ function changeButton(event) {
     currentAction.index = config.slides[currentSlide][newButton].length;
     config.slides[currentSlide][newButton].push(action);
     currentAction.button = newButton;
-    switchAction(currentAction);
+    editSlide(String(currentSlide));
 }
 
 function changeSource(event) {
@@ -484,9 +486,28 @@ function addSlide() {
 		"hotSpots" : []
 	};
 	createOption("slideSelect", slideName);
-	createOption("targetSlideSelect", slideName);
+	createOption("destinationSlideSelect", slideName);
 	
 	editSlide(slideName);
+}
+
+function deleteSlide() {
+    "use strict";
+    var slideList = Object.keys(config.slides),
+        temp = currentSlide;
+    
+    if (slideList.length <= 1) {
+        addSlide();
+        delete config.slides[temp];
+        editSlide(currentSlide);
+    } else {
+        delete config.slides[currentSlide];
+        temp = slideList[0];
+        if (temp === currentSlide) {
+            temp = slideList[1];
+        }
+        editSlide(temp);
+    }
 }
 
 function addHotSpot() {
@@ -563,6 +584,9 @@ function updateSlideName(event) {
 	config.slides[newSlide] = config.slides[currentSlide];
 	delete config.slides[currentSlide];
     
+    if (config.startingSlide === currentSlide) {
+        config.startingSlide = newSlide;
+    }
     for (s in config.slides) {
         if (config.slides.hasOwnProperty(s)) {
             for (a in INTERACTIONS) {

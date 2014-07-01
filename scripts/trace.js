@@ -2,7 +2,7 @@
 
 var currentStream = null,
 	streamsToKill = [],
-    RADIUS = 10,
+    RADIUS = 5,
     BUTTON_COLORS = {
         "NNN" : "#999",
         "YNN" : "#e41a1c",
@@ -45,7 +45,9 @@ function startTrace() {
 					}
                     p = JSON.parse(p);
                     visContext.fillStyle = BUTTON_COLORS[p.b];
-					visContext.fillRect(p.x - RADIUS, p.y - RADIUS, 2 * RADIUS, 2 * RADIUS);
+                    visContext.beginPath();
+					visContext.arc(p.x, p.y, RADIUS, 0, 2 * Math.PI);
+                    visContext.fill();
 				}, 1);
 			});
 		},
