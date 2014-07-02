@@ -38,7 +38,7 @@ function startTrace() {
             canvas.setAttribute("height", $(window).height());
 			visContext.globalAlpha = 1 / Math.log(numResults);
 			
-			tangelo.stream.start("serverSide?operation=pollStream&userid=" + userid, function (key) {
+			tangelo.stream.start("serverSide?userid=" + userid, function (key) {
                 tangelo.stream.run(key, function (p) {
                     var i = streamsToKill.indexOf(key);
 					if (i !== -1 || p === undefined) {
@@ -47,7 +47,8 @@ function startTrace() {
                         }
 						return false;
 					}
-                    p = JSON.parse(p);
+                    //console.log(p);
+                    //p = JSON.parse(p);
                     visContext.fillStyle = BUTTON_COLORS[p.b];
                     visContext.beginPath();
 					visContext.arc(p.x, p.y, RADIUS, 0, 2 * Math.PI);

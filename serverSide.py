@@ -60,7 +60,7 @@ def countStream(userid, currentSlide):
     except:
         return "COULDN'T GET DATA"
 
-def pollStream(userid):
+def stream(userid):
     # return userStreams.get(userid, None)
     if userStreams.get(userid, None) == None:
         return
@@ -73,7 +73,7 @@ def pollStream(userid):
         except StopIteration:
             pass
 
-def reset():
+def reset_db():
     client.local.participants.drop()
     client.local.tracking.drop()
     client.local.transitions.drop()
@@ -96,8 +96,6 @@ def run(operation="start", **kwargs):
         return addTransition(**kwargs)
     elif operation == "countStream":
         return countStream(**kwargs)
-    elif operation == "pollStream":
-        return pollStream(**kwargs)
 
 if __name__ == '__main__':
-    reset()
+    reset_db()
