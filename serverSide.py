@@ -81,6 +81,8 @@ def reset_db():
     client.local.create_collection('participants')
     client.local.create_collection('tracking')
     client.local.create_collection('transitions')
+    
+    return "SUCCESS"
 
 def run(operation="start", **kwargs):
     if not validConnection:
@@ -96,6 +98,8 @@ def run(operation="start", **kwargs):
         return addTransition(**kwargs)
     elif operation == "countStream":
         return countStream(**kwargs)
+    elif operation == "reset":
+        return reset_db()
 
 if __name__ == '__main__':
     reset_db()

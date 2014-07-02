@@ -2,6 +2,30 @@
 <html>
 
 <head>
+    <script type="application/javascript" src="lib/jquery-1.11.0.min.js"></script>
+    <script type="application/javascript" src="scripts/common.js"></script>
+    <script type="application/javascript">
+    function reset() {
+        $.ajax({
+            url: "serverSide?operation=reset",
+            success: function (result) {
+                if (result !== "SUCCESS") {
+                    alert("Actually, that didn't work... shoot me an email!");
+                    if (DEBUG) {
+                        console.warn("error resetting tracking data");
+                    }
+                    return;
+                }
+            },
+            error: function (o, message, e) {
+                alert("Actually, that didn't work... shoot me an email!");
+                if (DEBUG) {
+                    console.warn("error resetting tracking data");
+                }
+            }
+        });
+    }
+    </script>
 </head>
 
 <body>
@@ -9,8 +33,9 @@
     <a href="track.html">mouse tracking enabled</a>&mdash;your actions will be recorded for all to see!<br/>
     <a href="preview.html">no mouse tracking</a>&mdash;try the interactions, but no data will be recorded
     <h4>View the results:</h4>
-    <a href="trace.html">Animated trace per-slide</a>
-    <h4>Edit interactions:</h4>
+    <a href="trace.html">Animated trace per-slide</a>&mdash;this is pretty crappy vis. It's just a quick demo to show that data is being logged, and we can stream it back to the browser. I'm using mongodb in the back end, so it shouldn't be hard to make more interesting views / detailed queries. It also means a lot of scalability has been handled for me. :-)<br/>
+    <button onclick="reset()">Reset database</button>&mdash;this will throw away everyone's tracking data. As we aren't giving this to real users yet, feel free to press this as much as you like (useful if you want to see just YOUR interactions).
+    <h4>Edit the prototype:</h4>
     <a href="edit.html">Editor</a>&mdash;nothing is saved, so don't worry about messing anything up (you would have to overwrite <a href="data/config.json">config.json</a>)
 </body>
 
