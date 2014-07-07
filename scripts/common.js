@@ -52,7 +52,7 @@ function connectToServer() {
 			url: "serverSide?operation=start",
 			success: function (newId) {
 				if (newId === "NO DB CONNECTION" || newId === "CAN'T CREATE ID") {
-					if (DEBUG) {
+					if (DEBUG === true && console !== undefined) {
 						console.warn(newId);
 					}
 				} else {
@@ -61,11 +61,13 @@ function connectToServer() {
 					currentSlide = config.startingSlide;
 					localStorage.setItem("slide", currentSlide);
 					successful = true;
-					console.log("Starting new session with id: " + newId);
+                    if (DEBUG === true && console !== undefined) {
+					    console.log("Starting new session with id: " + newId);
+                    }
 				}
 			},
 			error: function () {
-				if (DEBUG) {
+				if (DEBUG === true && console !== undefined) {
 					console.warn("TANGELO CONNECTION ERROR");
 				}
 			},
@@ -79,11 +81,11 @@ function connectToServer() {
 			},
 			success: function (lastSlide) {
 				if (lastSlide === "NO DB CONNECTION" || lastSlide === "DB ERROR") {
-					if (DEBUG) {
+					if (DEBUG === true && console !== undefined) {
 						console.warn(lastSlide);
 					}
 				} else if (lastSlide === "ID DOESN'T EXIST") {
-					if (DEBUG) {
+					if (DEBUG === true && console !== undefined) {
 						console.warn(lastSlide + "; resetting localStorage and refreshing...");
 					}
 					localStorage.removeItem("id");
@@ -96,14 +98,14 @@ function connectToServer() {
 					    currentSlide = lastSlide;
                     }
 					localStorage.setItem("slide", currentSlide);
-					if (DEBUG) {
+					if (DEBUG === true && console !== undefined) {
 					    console.log("Resuming session with id: " + userid);
                     }
                     successful = true;
 				}
 			},
 			error: function () {
-				if (DEBUG) {
+				if (DEBUG === true && console !== undefined) {
 					console.warn("TANGELO CONNECTION ERROR");
 				}
 			},

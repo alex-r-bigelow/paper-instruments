@@ -17,7 +17,7 @@ function logTransition(prevSlide, nextSlide) {
             })
         },
         success: function (message) {
-            if (DEBUG) {
+            if (DEBUG === true && console !== undefined) {
                 if (message !== "SUCCESS") {
                     console.warn("error logging transition: " + message);
                 } else {
@@ -26,7 +26,7 @@ function logTransition(prevSlide, nextSlide) {
             }
         },
         error: function (o, message, e) {
-            if (DEBUG) {
+            if (DEBUG === true && console !== undefined) {
                 console.warn("error logging transition: " + message);
             }
         }
@@ -68,7 +68,7 @@ function logMouse(e) {
 				history: JSON.stringify(mouseHistory)
 			},
 			success: function (message) {
-				if (DEBUG) {
+				if (DEBUG === true && console !== undefined) {
 					if (message !== "SUCCESS") {
 						console.warn("error logging last " + RECORD_THRESHOLD + " mouse states: " + message);
 					} else {
@@ -77,7 +77,7 @@ function logMouse(e) {
 				}
 			},
 			error: function (o, message, e) {
-				if (DEBUG) {
+				if (DEBUG === true && console !== undefined) {
 					console.warn("error logging last " + RECORD_THRESHOLD + " mouse states: " + message);
 				}
 			}
@@ -89,13 +89,13 @@ function logMouse(e) {
 function startTrackingSession() {
     "use strict";
 	if (connectedToServer === true) {
-		if (DEBUG) {
+		if (DEBUG === true && console !== undefined) {
 			console.log('successfully established logging connection');
 		}
 		document.addEventListener('mousemove', logMouse, false);
         document.addEventListener('mousewheel', logMouse, false);
 	} else {
-		if (DEBUG) {
+		if (DEBUG === true && console !== undefined) {
 			console.warn('could not establish logging connection');
 		}
 	}

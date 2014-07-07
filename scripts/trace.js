@@ -28,7 +28,7 @@ function startTrace() {
 		},
 		success: function (numResults) {
 			if (numResults === "COULDN'T GET DATA") {
-				if (DEBUG) {
+				if (DEBUG === true && console !== undefined) {
 					console.warn("error getting tracking data: " + numResults);
 				}
 				return;
@@ -47,8 +47,6 @@ function startTrace() {
                         }
 						return false;
 					}
-                    //console.log(p);
-                    //p = JSON.parse(p);
                     visContext.fillStyle = BUTTON_COLORS[p.b];
                     visContext.beginPath();
 					visContext.arc(p.x, p.y, RADIUS, 0, 2 * Math.PI);
@@ -57,7 +55,7 @@ function startTrace() {
 			});
 		},
 		error: function (o, message, e) {
-			if (DEBUG) {
+			if (DEBUG === true && console !== undefined) {
 				console.warn("error getting tracking data: " + message);
 			}
 		}
