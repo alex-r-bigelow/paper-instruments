@@ -1,14 +1,10 @@
-/*globals $, console, alert, tangelo*/
+/*globals $, console, interact, tangelo*/
 
 var DEBUG = true,
 	config,
 	userid = localStorage.getItem("id"),
 	currentSlide = localStorage.getItem("slide"),
     connectedToServer,
-    isSupported = false,
-    supportedBrowsers = [
-        "Chrome"
-    ],
     INTERACTIONS = {
         RIGHT_MOUSE : null,
         LEFT_MOUSE : null,
@@ -17,18 +13,6 @@ var DEBUG = true,
     transitionCallback;
 
 // Functions to call in all cases:
-function checkBrowser() {
-    "use strict";
-    supportedBrowsers.forEach(function (b) {
-        if (navigator.userAgent.indexOf(b) !== -1) {
-            isSupported = true;
-        }
-    });
-    if (isSupported === false) {
-        alert('This page wasn\'t designed for your current browser (Chrome is ideal); use at your own risk.');
-    }
-}
-
 function loadConfig() {
     "use strict";
     $.ajax({
@@ -130,7 +114,6 @@ function connectToServer() {
     return successful;
 }
 
-checkBrowser();
 loadConfig();
 connectedToServer = connectToServer();
 
@@ -138,9 +121,7 @@ connectedToServer = connectToServer();
 function interactWithSlide(slideName) {
 	"use strict";
 	var slide = config.slides[slideName],
-		areas = "<svg id='hotSpotAreas' onmousedown='interact(event)'" +
-            " onmousemove='interact(event)' onmouseup='interact(event)'" +
-            " onmousewheel='interact(event)'>",
+		areas = "<svg id='hotSpotAreas'>",
         i,
         h;
 	
@@ -158,6 +139,10 @@ function interactWithSlide(slideName) {
     
 	document.getElementById("image").setAttribute("src", "data/" + slide.image);
 	document.getElementById("areas").innerHTML = areas;
+    document.getElementById("hotSpotAreas").addEventListener('mousedown', interact);
+    document.getElementById("hotSpotAreas").addEventListener('mousemove', interact);
+    document.getElementById("hotSpotAreas").addEventListener('mouseup', interact);
+    document.getElementById("hotSpotAreas").addEventListener('mousewheel', interact);
 	currentSlide = slideName;
 	localStorage.setItem("slide", currentSlide);
 }
@@ -169,7 +154,6 @@ function interact(event) {
         button,
         actions,
         i;
-    
     if ((event.type === "mousedown" || event.type === "mouseup") && event.button === 0) {
         button = 'LEFT_MOUSE';
     } else if (event.button === 1) {
@@ -212,6 +196,10 @@ function interact(event) {
             }
         }
         INTERACTIONS[button] = null;
+    } else if (INTERACTIONS.CENTER_MOUSE !== null && event.type === "mousemove") {
+        // there's no mouseup equivalent for mousewheel, so just reset it next time the
+        // mouse moves
+        INTERACTIONS.CENTER_MOUSE = null;
     }
 }
 

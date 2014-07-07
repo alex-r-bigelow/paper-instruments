@@ -1,9 +1,43 @@
 <!DOCTYPE html>
 <html>
-
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
 <head>
-    <script type="application/javascript" src="lib/jquery-1.11.0.min.js"></script>
-    <script type="application/javascript" src="scripts/common.js"></script>
+
+	<!-- Basic Page Needs
+  ================================================== -->
+	<meta charset="utf-8"/>
+	<title>paper-instruments</title>
+	<meta name="description" content="Prototyping on Paper (https://popapp.in/) clone for the desktop + mouse tracking"/>
+	<meta name="author" content="Alex Bigelow"/>
+
+	<!-- Mobile Specific Metas
+  ================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+	<!-- CSS
+  ================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css"/>
+	<link rel="stylesheet" href="stylesheets/skeleton.css"/>
+	<link rel="stylesheet" href="stylesheets/layout.css"/>
+    <link rel="stylesheet" href="stylesheets/additions.css"/>
+
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Favicons
+	================================================== -->
+	<link rel="shortcut icon" href="images/favicon.ico"/>
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png"/>
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png"/>
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png"/>
+
+	<script type="application/javascript" src="lib/jquery-1.11.0.min.js"></script>
+	<script type="application/javascript" src="scripts/common.js"></script>
+    
     <script type="application/javascript">
     function reset() {
         $.ajax({
@@ -32,9 +66,11 @@
 	<h4>Try the prototype:</h4>
     <a href="track.html">mouse tracking enabled</a>&mdash;your actions will be recorded for all to see!<br/>
     <a href="preview.html">no mouse tracking</a>&mdash;try the interactions, but no data will be recorded
+    <hr/>
     <h4>View the results:</h4>
     <a href="trace.html">Animated trace per-slide</a>&mdash;this is pretty crappy vis. It's just a quick demo to show that data is being logged, and we can stream it back to the browser. I'm using mongodb in the back end, so it shouldn't be hard to make more interesting views / detailed queries. It also means a lot of scalability has been handled for me. :-)<br/>
     <button onclick="reset()">Reset database</button>&mdash;this will throw away everyone's tracking data. As we aren't giving this to real users yet, feel free to press this as much as you like (useful if you want to see just YOUR interactions).
+    <hr/>
     <h4>Edit the prototype:</h4>
     <a href="edit.html">Editor</a>&mdash;nothing is saved, so don't worry about messing anything up (you would have to overwrite <a href="data/config.json">config.json</a>)
 </body>

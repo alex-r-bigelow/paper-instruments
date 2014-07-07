@@ -1,68 +1,75 @@
 <!DOCTYPE html>
 <html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
 <head>
+
+	<!-- Basic Page Needs
+  ================================================== -->
+	<meta charset="utf-8"/>
+	<title>paper-instruments</title>
+	<meta name="description" content="Prototyping on Paper (https://popapp.in/) clone for the desktop + mouse tracking"/>
+	<meta name="author" content="Alex Bigelow"/>
+
+	<!-- Mobile Specific Metas
+  ================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+	<!-- CSS
+  ================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css"/>
+	<link rel="stylesheet" href="stylesheets/skeleton.css"/>
+	<link rel="stylesheet" href="stylesheets/layout.css"/>
+    <link rel="stylesheet" href="stylesheets/additions.css"/>
+
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Favicons
+	================================================== -->
+	<link rel="shortcut icon" href="images/favicon.ico"/>
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png"/>
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png"/>
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png"/>
+
 	<script type="application/javascript" src="lib/jquery-1.11.0.min.js"></script>
 	<script type="application/javascript" src="scripts/common.js"></script>
-	<style>
-	#config {
-		position : absolute;
-		top : 0px;
-		right : 0px;
-	}
-	input.error {
-		background-color: rgba(255, 0, 0, 0.25);
-	}
-	img, svg {
-		position: absolute;
-		left: 0px;
-		top: 0px;
-	}
-	svg path {
-		fill: #55bada;
-		fill-opacity: 0.5;
-		stroke : none;
-	}
-	svg path.selected {
-		stroke : #55bada;
-		stroke-width : 3px;
-	}
-	svg circle {
-		fill: #55bada;
-	}
-	</style>
 </head>
 
-<body>
+<body class="container">
 	<img id="image" src="" />
 	<div id="areas"></div>
 	<div id="config">
         <button onclick="addSlide();">Add Slide</button>
-        <button onclick="deleteSlide();">Delete Slide</button><br/>
+        <button onclick="deleteSlide();">Delete Slide</button>
 		<label>Current Slide:</label>
-		<select id="slideSelect"></select><br/>
+		<select id="slideSelect"></select>
         
 		<hr/>
         
 		<div id="slideNameImageDiv">
 			<label>Name:</label>
-			<input type="text" id="slideName" onchange="updateSlideName(event);"/><br/>
+			<input type="text" id="slideName" onchange="updateSlideName(event);"/>
 			<label>Image:</label>
-			<input type="text" id="slideImage" onchange="updateSlideImage(event);"/><br/>
+			<input type="text" id="slideImage" onchange="updateSlideImage(event);"/>
 		</div>
         
 		<hr/>
         
         <button onclick="addHotSpot();">Add Hot Spot</button>
-        <button id="deleteHotSpotButton" onclick="deleteHotSpot();">Delete Hot Spot</button><br/>
+        <button id="deleteHotSpotButton" onclick="deleteHotSpot();">Delete Hot Spot</button>
         <label>Hot Spot ID:</label>
-        <input type="text" id="hotSpotId" onchange="HotSpot.replaceId(event);" onfocus="HotSpot.logId(event);"/><br/>
+        <input type="text" id="hotSpotId" onchange="HotSpot.replaceId(event);" onfocus="HotSpot.logId(event);"/>
         
         <hr/>
         
         <label>Interactions:</label>
-        <select id="actionSelect"></select><br/>
+        <select id="actionSelect"></select>
         <button onclick="addAction();">New Interaction</button>
-        <button id="deleteActionButton" onclick="deleteAction();">Delete Interaction</button><br/>
+        <button id="deleteActionButton" onclick="deleteAction();">Delete Interaction</button>
         
         <div id="actionDetailsDiv">
             <label>Button:</label>
@@ -70,12 +77,12 @@
                 <option value="LEFT_MOUSE">Left</option>
                 <option value="CENTER_MOUSE">Center</option>
                 <option value="RIGHT_MOUSE">Right</option>
-            </select><br/>
+            </select>
 
             <label>Source Hot Spot:</label>
-            <select id="actionSourceSelect"></select><br/>
+            <select id="actionSourceSelect"></select>
             <label>Target Hot Spot:</label>
-            <select id="actionTargetSelect"></select><br/>
+            <select id="actionTargetSelect"></select>
             <label>Destination Slide:</label>
             <select id="destinationSlideSelect" onchange="HotSpot.updateTargetSlide(event);"></select>
         </div>

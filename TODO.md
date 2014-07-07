@@ -1,6 +1,8 @@
 Need to:
-- Create legit vis.html
+- Cross-browser support
 - Hide hot spots until either the user has clicked somewhere that doesn't work, or maybe a timer would be better?
+- video slides
+- Create legit vis.html
 
 It would be nice to:
 - Easier install (bundle everything into a single, double-clickable app?)

@@ -1,6 +1,6 @@
 /*globals $, console, currentSlide, userid, DEBUG, connectedToServer, INTERACTIONS, initInteraction */
 
-var RECORD_THRESHOLD = 200,
+var RECORD_THRESHOLD = 50,
 	mouseHistory = [];
 
 function logTransition(prevSlide, nextSlide) {

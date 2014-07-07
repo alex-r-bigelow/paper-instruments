@@ -1,4 +1,4 @@
-/*globals $, console, config, DEBUG, currentSlide:true, INTERACTIONS, createOption, editSlide */
+/*globals $, console, alert, config, DEBUG, currentSlide:true, INTERACTIONS, createOption, editSlide */
 
 var currentAction = {
         button : null,
@@ -7,7 +7,12 @@ var currentAction = {
             "use strict";
             return currentAction.button + " " + String(currentAction.index);
         }
-    };
+    },
+    isSupported = false,
+    supportedBrowsers = [
+        "Chrome",
+        "Opera"
+    ];
 
 // HotSpot class
 function HotSpot(configElement) {
@@ -272,166 +277,16 @@ HotSpot.prototype.dragHandle = function (event, segmentNo, pointNo) {
 
 // General functions
 
-function switchAction(newAction) {
+function checkBrowser() {
     "use strict";
-    var slide = config.slides[currentSlide],
-        actionSelect = document.getElementById("actionSelect"),
-        actionButtonSelect = document.getElementById("actionButtonSelect"),
-        actionSourceSelect = document.getElementById("actionSourceSelect"),
-        actionTargetSelect = document.getElementById("actionTargetSelect"),
-        destinationSlideSelect = document.getElementById("destinationSlideSelect"),
-        temp;
-    
-    if (typeof newAction === 'string') {
-        temp = newAction.split(" ");
-        currentAction.index = Number(temp.pop());
-        currentAction.button = temp.join(" ");
-    }
-    
-    if (newAction !== null) {
-        document.getElementById("deleteActionButton").removeAttribute("disabled");
-        document.getElementById("actionButtonSelect").removeAttribute("disabled");
-        document.getElementById("actionSourceSelect").removeAttribute("disabled");
-        document.getElementById("actionTargetSelect").removeAttribute("disabled");
-        document.getElementById("destinationSlideSelect").removeAttribute("disabled");
-        
-        actionButtonSelect.removeAttribute("onchange");
-        actionSourceSelect.removeAttribute("onchange");
-        actionSourceSelect.options.length = 0;
-        actionTargetSelect.removeAttribute("onchange");
-        actionTargetSelect.options.length = 0;
-        destinationSlideSelect.removeAttribute("onchange");
-        
-        createOption("actionSourceSelect", "(Empty Space)");
-        createOption("actionTargetSelect", "(Same as source)");
-        createOption("actionTargetSelect", "(Empty Space)");
-        slide.hotSpots.forEach(function (h) {
-            createOption("actionSourceSelect", h.id);
-            createOption("actionTargetSelect", h.id);
-        });
-        actionButtonSelect.value = currentAction.button;
-        actionSourceSelect.value = slide[currentAction.button][currentAction.index].source;
-        if (slide[currentAction.button][currentAction.index].hasOwnProperty("target")) {
-            actionTargetSelect.value = slide[currentAction.button][currentAction.index].target;
-        } else {
-            actionTargetSelect.selectedIndex = 0;
+    supportedBrowsers.forEach(function (b) {
+        if (navigator.userAgent.indexOf(b) !== -1) {
+            isSupported = true;
         }
-        destinationSlideSelect.value = slide[currentAction.button][currentAction.index].destination;
-
-        actionButtonSelect.setAttribute("onchange", "changeButton(event);");
-        actionSourceSelect.setAttribute("onchange", "changeSource(event);");
-        actionTargetSelect.setAttribute("onchange", "changeTarget(event);");
-        destinationSlideSelect.setAttribute("onchange", "changeDestination(event);");
-    } else {
-        currentAction.index = 0;
-        currentAction.button = null;
-        
-        document.getElementById("deleteActionButton").setAttribute("disabled", "true");
-        document.getElementById("actionButtonSelect").setAttribute("disabled", "true");
-        document.getElementById("actionSourceSelect").setAttribute("disabled", "true");
-        document.getElementById("actionTargetSelect").setAttribute("disabled", "true");
-        document.getElementById("destinationSlideSelect").setAttribute("disabled", "true");
+    });
+    if (isSupported === false) {
+        alert('Sorry, I didn\'t have time to make the editor work in all browsers (Chrome is ideal). This may be broken.');
     }
-}
-
-function editSlide(slideName) {
-	"use strict";
-	var slide = config.slides[slideName],
-        slideSelect = document.getElementById("slideSelect"),
-        destinationSlideSelect = document.getElementById("destinationSlideSelect"),
-        otherSlide,
-		hotSpotAreas = "<svg>",
-		hotSpot,
-        i,
-        j,
-        foundIndex = false,
-        index = 0,
-        actionSelect = document.getElementById("actionSelect"),
-        newSelection;
-	
-    // slides
-    document.getElementById("image").setAttribute("src", "data/" + slide.image);
-	document.getElementById("slideName").value = slideName;
-	document.getElementById("slideName").removeAttribute("class");
-	document.getElementById("slideImage").value = slide.image;
-    
-    slideSelect.removeAttribute("onchange");
-    destinationSlideSelect.removeAttribute("onchange");
-    slideSelect.options.length = 0;
-    destinationSlideSelect.options.length = 0;
-    for (otherSlide in config.slides) {
-		if (config.slides.hasOwnProperty(otherSlide)) {
-			createOption("slideSelect", otherSlide);
-			createOption("destinationSlideSelect", otherSlide);
-		}
-	}
-    slideSelect.value = slideName;
-    slideSelect.setAttribute("onchange", "editSlide(event.target.value);");
-    destinationSlideSelect.setAttribute("onchange", "changeDestination(event);");
-    
-    // hotspots
-    if (slideName !== currentSlide || HotSpot.SELECTED_HASH === null) {
-        HotSpot.SELECTED_HASH = null;
-        document.getElementById("hotSpotId").setAttribute("disabled", "true");
-        document.getElementById("deleteHotSpotButton").setAttribute("disabled", "true");
-    }
-    
-    slide.hotSpots.forEach(function (a) {
-		hotSpot = new HotSpot(a);
-		hotSpotAreas += "<path id='hotSpot_" + hotSpot.hash + "' " +
-			"d='" + a.path + "' " +
-			"onmousedown='HotSpot.ALL[\"" + hotSpot.hash + "\"]" +
-			".startDragging(event);'></path>";
-        if (HotSpot.SELECTED_HASH !== null && hotSpot.configElement.id === HotSpot.ALL[HotSpot.SELECTED_HASH].configElement.id) {
-            newSelection = hotSpot;
-        }
-	});
-	hotSpotAreas += "<g id='handles'></g>";
-	document.getElementById("areas").innerHTML = hotSpotAreas;
-	
-    if (newSelection !== undefined) {
-        HotSpot.SELECTED_HASH = null;
-        newSelection.select();
-    }
-    
-    // actions
-    if (slideName !== currentSlide) {
-        currentAction = {
-            button : null,
-            index : 0
-        };
-    }
-    actionSelect.removeAttribute("onchange");
-    actionSelect.options.length = 0;
-    
-    for (i in INTERACTIONS) {
-        if (INTERACTIONS.hasOwnProperty(i) && config.slides[slideName].hasOwnProperty(i)) {
-            for (j = 0; j < config.slides[slideName][i].length; j += 1) {
-                if (j === currentAction.index && (currentAction.button === null || currentAction.button === i)) {
-                    foundIndex = true;
-                    if (currentAction.button === null) {
-                        currentAction.button = i;
-                    }
-                }
-                if (foundIndex === false) {
-                    index += 1;
-                }
-                createOption("actionSelect", i + " " + String(j));
-            }
-        }
-    }
-        
-    // finalize
-	currentSlide = slideName;
-	localStorage.setItem("slide", slideName);
-    
-    if (foundIndex === false) {
-        switchAction(null);
-    } else {
-        actionSelect.selectedIndex = index;
-        switchAction(currentAction);
-    }
-    actionSelect.setAttribute("onchange", "switchAction(event.target.value);");
 }
 
 function changeButton(event) {
@@ -467,6 +322,181 @@ function changeTarget(event) {
 function changeDestination(event) {
     "use strict";
     config.slides[currentSlide][currentAction.button][currentAction.index].destination = event.target.value;
+}
+
+function switchAction(newAction) {
+    "use strict";
+    var slide = config.slides[currentSlide],
+        actionSelect = document.getElementById("actionSelect"),
+        actionButtonSelect = document.getElementById("actionButtonSelect"),
+        actionSourceSelect = document.getElementById("actionSourceSelect"),
+        actionTargetSelect = document.getElementById("actionTargetSelect"),
+        destinationSlideSelect = document.getElementById("destinationSlideSelect"),
+        temp;
+    
+    if (typeof newAction === 'string') {
+        temp = newAction.split(" ");
+        currentAction.index = Number(temp.pop());
+        currentAction.button = temp.join(" ");
+    }
+    
+    if (newAction !== null) {
+        document.getElementById("deleteActionButton").removeAttribute("disabled");
+        actionButtonSelect.removeAttribute("disabled");
+        actionSourceSelect.removeAttribute("disabled");
+        actionTargetSelect.removeAttribute("disabled");
+        destinationSlideSelect.removeAttribute("disabled");
+        
+        actionButtonSelect.removeEventListener("change", changeButton);
+        actionSourceSelect.removeEventListener("change", changeSource);
+        actionTargetSelect.removeEventListener("change", changeTarget);
+        destinationSlideSelect.removeEventListener("change", changeDestination);
+        
+        actionSourceSelect.options.length = 0;
+        actionTargetSelect.options.length = 0;
+        
+        createOption("actionSourceSelect", "(Empty Space)");
+        createOption("actionTargetSelect", "(Same as source)");
+        createOption("actionTargetSelect", "(Empty Space)");
+        slide.hotSpots.forEach(function (h) {
+            createOption("actionSourceSelect", h.id);
+            createOption("actionTargetSelect", h.id);
+        });
+        actionButtonSelect.value = currentAction.button;
+        actionSourceSelect.value = slide[currentAction.button][currentAction.index].source;
+        if (slide[currentAction.button][currentAction.index].hasOwnProperty("target")) {
+            actionTargetSelect.value = slide[currentAction.button][currentAction.index].target;
+        } else {
+            actionTargetSelect.selectedIndex = 0;
+        }
+        destinationSlideSelect.value = slide[currentAction.button][currentAction.index].destination;
+        
+        actionButtonSelect.addEventListener("change", changeButton);
+        actionSourceSelect.addEventListener("change", changeSource);
+        actionTargetSelect.addEventListener("change", changeTarget);
+        destinationSlideSelect.addEventListener("change", changeDestination);
+    } else {
+        currentAction.index = 0;
+        currentAction.button = null;
+        
+        document.getElementById("deleteActionButton").setAttribute("disabled", "true");
+        document.getElementById("actionButtonSelect").setAttribute("disabled", "true");
+        document.getElementById("actionSourceSelect").setAttribute("disabled", "true");
+        document.getElementById("actionTargetSelect").setAttribute("disabled", "true");
+        document.getElementById("destinationSlideSelect").setAttribute("disabled", "true");
+    }
+}
+
+function switchActionDummy(event) {
+    "use strict";
+    return switchAction(event.target.value);
+}
+
+function editSlideDummy(event) {
+    "use strict";
+    return editSlide(event.target.value);
+}
+
+function editSlide(slideName) {
+	"use strict";
+	var slide = config.slides[slideName],
+        slideSelect = document.getElementById("slideSelect"),
+        destinationSlideSelect = document.getElementById("destinationSlideSelect"),
+        otherSlide,
+		hotSpotAreas = "<svg>",
+		hotSpot,
+        i,
+        j,
+        foundIndex = false,
+        index = 0,
+        actionSelect = document.getElementById("actionSelect"),
+        newSelection;
+	
+    // slides
+    document.getElementById("image").setAttribute("src", "data/" + slide.image);
+	document.getElementById("slideName").value = slideName;
+	document.getElementById("slideName").removeAttribute("class");
+	document.getElementById("slideImage").value = slide.image;
+    
+    slideSelect.removeEventListener("change", editSlideDummy);
+    destinationSlideSelect.removeEventListener("change", changeDestination);
+    
+    slideSelect.options.length = 0;
+    destinationSlideSelect.options.length = 0;
+    
+    for (otherSlide in config.slides) {
+		if (config.slides.hasOwnProperty(otherSlide)) {
+			createOption("slideSelect", otherSlide);
+			createOption("destinationSlideSelect", otherSlide);
+		}
+	}
+    slideSelect.value = slideName;
+    slideSelect.addEventListener("change", editSlideDummy);
+    destinationSlideSelect.addEventListener("change", changeDestination);
+    
+    // hotspots
+    if (slideName !== currentSlide || HotSpot.SELECTED_HASH === null) {
+        HotSpot.SELECTED_HASH = null;
+        document.getElementById("hotSpotId").setAttribute("disabled", "true");
+        document.getElementById("deleteHotSpotButton").setAttribute("disabled", "true");
+    }
+    
+    slide.hotSpots.forEach(function (a) {
+		hotSpot = new HotSpot(a);
+		hotSpotAreas += "<path id='hotSpot_" + hotSpot.hash + "' " +
+			"d='" + a.path + "' " +
+			"onmousedown='HotSpot.ALL[\"" + hotSpot.hash + "\"]" +
+			".startDragging(window.event);'></path>";
+        if (HotSpot.SELECTED_HASH !== null && hotSpot.configElement.id === HotSpot.ALL[HotSpot.SELECTED_HASH].configElement.id) {
+            newSelection = hotSpot;
+        }
+	});
+	hotSpotAreas += "<g id='handles'></g>";
+	document.getElementById("areas").innerHTML = hotSpotAreas;
+	
+    if (newSelection !== undefined) {
+        HotSpot.SELECTED_HASH = null;
+        newSelection.select();
+    }
+    
+    // actions
+    if (slideName !== currentSlide) {
+        currentAction = {
+            button : null,
+            index : 0
+        };
+    }
+    actionSelect.removeEventListener("change", switchActionDummy);
+    actionSelect.options.length = 0;
+    
+    for (i in INTERACTIONS) {
+        if (INTERACTIONS.hasOwnProperty(i) && config.slides[slideName].hasOwnProperty(i)) {
+            for (j = 0; j < config.slides[slideName][i].length; j += 1) {
+                if (j === currentAction.index && (currentAction.button === null || currentAction.button === i)) {
+                    foundIndex = true;
+                    if (currentAction.button === null) {
+                        currentAction.button = i;
+                    }
+                }
+                if (foundIndex === false) {
+                    index += 1;
+                }
+                createOption("actionSelect", i + " " + String(j));
+            }
+        }
+    }
+        
+    // finalize
+	currentSlide = slideName;
+	localStorage.setItem("slide", slideName);
+    
+    if (foundIndex === false) {
+        switchAction(null);
+    } else {
+        actionSelect.selectedIndex = index;
+        switchAction(currentAction);
+    }
+    actionSelect.addEventListener("change", switchActionDummy);
 }
 
 function addSlide() {
@@ -632,4 +662,5 @@ function downloadConfig() {
     pom.click();
 }
 
+checkBrowser();
 editSlide(currentSlide);
