@@ -6,7 +6,7 @@
 input.error {
     background-color: rgba(255, 0, 0, 0.25);
 }
-img, svg {
+img, svg, canvas {
     position: absolute;
     left: 0px;
     top: 0px;
@@ -22,4 +22,9 @@ svg path.selected {
 }
 svg circle {
     fill: #55bada;
+}
+#slideSelect {
+    position: absolute;
+    right: 0px;
+    top: 0px;
 }

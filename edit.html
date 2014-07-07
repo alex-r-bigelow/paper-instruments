@@ -39,38 +39,38 @@
 	<script type="application/javascript" src="scripts/common.js"></script>
 </head>
 
-<body class="container">
+<body>
 	<img id="image" src="" />
 	<div id="areas"></div>
-	<div id="config">
+    <div id="config">
         <button onclick="addSlide();">Add Slide</button>
         <button onclick="deleteSlide();">Delete Slide</button>
-		<label>Current Slide:</label>
-		<select id="slideSelect"></select>
-        
-		<hr/>
-        
-		<div id="slideNameImageDiv">
-			<label>Name:</label>
-			<input type="text" id="slideName" onchange="updateSlideName(event);"/>
-			<label>Image:</label>
-			<input type="text" id="slideImage" onchange="updateSlideImage(event);"/>
-		</div>
-        
-		<hr/>
-        
+        <label>Current Slide:</label>
+        <select id="slideSelect"></select>
+
+        <hr/>
+
+        <div id="slideNameImageDiv">
+            <label>Name:</label>
+            <input type="text" id="slideName" onchange="updateSlideName(event);"/>
+            <label>Image:</label>
+            <input type="text" id="slideImage" onchange="updateSlideImage(event);"/>
+        </div>
+
+        <hr/>
+
         <button onclick="addHotSpot();">Add Hot Spot</button>
         <button id="deleteHotSpotButton" onclick="deleteHotSpot();">Delete Hot Spot</button>
         <label>Hot Spot ID:</label>
         <input type="text" id="hotSpotId" onchange="HotSpot.replaceId(event);" onfocus="HotSpot.logId(event);"/>
-        
+
         <hr/>
-        
+
         <label>Interactions:</label>
         <select id="actionSelect"></select>
         <button onclick="addAction();">New Interaction</button>
         <button id="deleteActionButton" onclick="deleteAction();">Delete Interaction</button>
-        
+
         <div id="actionDetailsDiv">
             <label>Button:</label>
             <select id="actionButtonSelect">
@@ -86,11 +86,11 @@
             <label>Destination Slide:</label>
             <select id="destinationSlideSelect" onchange="HotSpot.updateTargetSlide(event);"></select>
         </div>
-        
+
         <hr/>
-        
-		<button onclick="downloadConfig();">Generate config.json</button>
-	</div>
+
+        <button onclick="downloadConfig();">Generate config.json</button>
+    </div>
 	<script type="application/javascript" src="scripts/edit.js"></script>
 </body>
 
