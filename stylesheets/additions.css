@@ -16,6 +16,10 @@ svg path {
     fill-opacity: 0.5;
     stroke : none;
 }
+svg.hidden path {
+    fill: rgba(0, 0, 0, 0.001);
+    stroke: none;
+}
 svg path.selected {
     stroke : #55bada;
     stroke-width : 3px;

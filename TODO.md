@@ -1,6 +1,5 @@
 Need to:
 - Cross-browser support
-- Hide hot spots until either the user has clicked somewhere that doesn't work, or maybe a timer would be better?
 - video slides
 - Create legit vis.html
 

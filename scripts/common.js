@@ -10,6 +10,8 @@ var DEBUG = true,
         LEFT_MOUSE : null,
         CENTER_MOUSE : null
     },
+    HOTSPOT_DELAY = 5000,
+    hotspot_timeout,
     transitionCallback;
 
 // Functions to call in all cases:
@@ -123,7 +125,7 @@ connectedToServer = connectToServer();
 function interactWithSlide(slideName) {
 	"use strict";
 	var slide = config.slides[slideName],
-		areas = "<svg id='hotSpotAreas'>",
+		areas = "<svg id='hotSpotAreas' class='hidden'>",
         i,
         h;
 	
@@ -147,6 +149,12 @@ function interactWithSlide(slideName) {
     document.getElementById("hotSpotAreas").addEventListener('mousewheel', interact);
 	currentSlide = slideName;
 	localStorage.setItem("slide", currentSlide);
+    if (hotspot_timeout !== undefined) {
+        window.clearTimeout(hotspot_timeout);
+    }
+    hotspot_timeout = window.setTimeout(function () {
+        document.getElementById('hotSpotAreas').setAttribute('class', 'showing');
+    }, HOTSPOT_DELAY);
 }
 
 function interact(event) {

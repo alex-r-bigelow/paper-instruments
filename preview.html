@@ -1,25 +1,42 @@
 <!DOCTYPE html>
 <html>
-
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
 <head>
+
+	<!-- Basic Page Needs
+  ================================================== -->
+	<meta charset="utf-8"/>
+	<title>paper-instruments</title>
+	<meta name="description" content="Prototyping on Paper (https://popapp.in/) clone for the desktop + mouse tracking"/>
+	<meta name="author" content="Alex Bigelow"/>
+
+	<!-- Mobile Specific Metas
+  ================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+	<!-- CSS
+  ================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css"/>
+	<link rel="stylesheet" href="stylesheets/skeleton.css"/>
+	<link rel="stylesheet" href="stylesheets/layout.css"/>
+    <link rel="stylesheet" href="stylesheets/additions.css"/>
+
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Favicons
+	================================================== -->
+	<link rel="shortcut icon" href="images/favicon.ico"/>
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png"/>
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png"/>
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png"/>
+
 	<script type="application/javascript" src="lib/jquery-1.11.0.min.js"></script>
 	<script type="application/javascript" src="scripts/common.js"></script>
-	<style>
-    #config {
-		position : absolute;
-		top : 0px;
-		right : 0px;
-	}
-	img, svg {
-		position: absolute;
-		left: 0px;
-		top: 0px;
-	}
-	svg path {
-		fill: #55bada;
-		fill-opacity: 0.5;
-	}
-	</style>
 </head>
 
 <body>
