@@ -27,8 +27,3 @@ svg path.selected {
 svg circle {
     fill: #55bada;
 }
-#slideSelect {
-    position: absolute;
-    right: 0px;
-    top: 0px;
-}
