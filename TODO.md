@@ -1,14 +1,18 @@
 Need to:
-- Cross-browser support
+- Better cross-browser support
 - video slides
 - Create legit vis.html
+- make more graphs (3), email for labeling
+- Manage / serve multiple projects
+- support concurrent states, general suppression of other hotSpots, and restricting transitions (and the corresponding hotSpots) dependent on concurrent states
+- Add default states changer
 
 It would be nice to:
+- undo / redo in tracker
+- undo / redo in the editor
 - Easier install (bundle everything into a single, double-clickable app?)
 - Webcam (+ image processing?) / way to add images to the directory
-- Manage / serve multiple projects
 - Add surveys before / after tracking
 - Fancier hotspot editing (e.g. curves, proper pen tool)
-- Layer sets instead of slides?
 - More interactions (keyboard, touch events)
-- Make dragging actually drag something visually
+- Better dragging feedback (cursors?)
