@@ -11,6 +11,10 @@ img, svg, canvas {
     left: 0px;
     top: 0px;
 }
+svg {
+    width: 100%;
+    height: 100%;
+}
 svg path {
     fill: #55bada;
     fill-opacity: 0.5;
