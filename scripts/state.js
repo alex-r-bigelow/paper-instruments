@@ -10,50 +10,94 @@ var graph = {
 function constructGraph (config) {
     var tempConfig,
         stateTree,
+        state,
         stateActions,
         action,
-        comboState = "",
-        possibleEffects = [],
-        effect;
+        comboString = "",
+        states = {},
+        possibleEvents = [],
+        events,
+        event,
+        targetComboString;
     
     for (stateTree in config) {
         if (config.hasOwnProperty(stateTree)) {
-            comboState += config[stateTree].currentState + "_";
-            stateActions = config[stateTree].states[config[stateTree].currentState].actions;
+            comboString += config[stateTree].currentState;
             
-            for (action in stateActions) {
-                if (stateActions.hasOwnProperty(action)) {
-                    possibleEffects.push(stateActions[action].effects);
+            state = config[stateTree].states[config[stateTree].currentState];
+            states[stateTree] = config[stateTree].currentState;
+            
+            for (action in state.actions) {
+                if (state.actions.hasOwnProperty(action)) {
+                    possibleEvents.push(state.actions[action].events);
                 }
             }
         }
     }
-    if (visited.hasOwnProperty(comboState) === false) {
-        visited[comboState] = graph.nodes.length;
+    if (visited.hasOwnProperty(comboString) === false) {
+        visited[comboString] = graph.nodes.length;
+        
+        
         graph.nodes.push({
-                combo : comboState,
-                group : 10
+                comboString : comboString,
+                states : states
             });  // TODO: compose preview of image layers?
         
-        for (effect = 0; effect < possibleEffects.length; effect += 1) {
-            tempConfig = jQuery.extend(true, {}, config);    // deep clone; this allows effect functions to do anything they want to the config object
-            possibleEffects[effect](tempConfig);
-            graph.links.push({
-                    source : visited[comboState],
-                    target : visited[constructGraph(tempConfig)]
-                });
+        for (events = 0; events < possibleEvents.length; events += 1) {
+            for (event in possibleEvents[events]) {
+                if (possibleEvents[events].hasOwnProperty(event)) {
+                    tempConfig = jQuery.extend(true, {}, config);    // deep clone; this allows effect functions to do anything they want to the config object
+                    possibleEvents[events][event](null, tempConfig);
+                    targetComboString = constructGraph(tempConfig);
+                    if (targetComboString !== comboString) {
+                        graph.links.push({
+                            source : visited[comboString],
+                            target : visited[targetComboString]
+                        });
+                    }
+                }
+            }
         }
     }
     
-    return comboState;
+    return comboString;
 }
 
 constructGraph(config);
 
+// Set up the preview:
+
+function updatePreview() {
+    var currentComboString = "",
+        images = [],
+        stateTree;
+    
+    for (stateTree in config) {
+        if (config.hasOwnProperty(stateTree)) {
+            images.push(config[stateTree].states[config[stateTree].currentState].image);
+        }
+    }
+    
+    document.getElementById("previewImages").innerHTML = "";
+    
+    var preview = d3.select('#previewImages');
+
+    var i = preview.selectAll("img")
+        .data(images);
+    
+    i.enter().append("img")
+        .attr("src", function (i) { return 'data/' + i.src; })
+        .attr("z-index", function (i) { return i.zIndex; });
+    
+    i.exit().remove();
+}
+updatePreview();
+
+
 // Display the graph:
 
-// Set up svg element
-var svg = d3.select("svg.graph"),
+// Set up the graph svg element
+var svg = d3.select("svg#graph"),
     width = Number(svg.attr("width")),
     height = Number(svg.attr("height"));
 
@@ -88,10 +132,14 @@ var path = svg.append("svg:g").selectAll("path")
     .attr("marker-end", "url(#end)");
 
 // Node hover helper function
-function hoverNode (d) {
-    var container = document.getElementById('label');
-    container.innerHTML = d.combo;
-    // TODO: display the images instead
+function clickNode (d) {
+    var tree;
+    for (tree in d.states) {
+        if (d.states.hasOwnProperty(tree)) {
+            config[tree].currentState = d.states[tree];
+        }
+    }
+    updatePreview();
 }
 
 // Add the nodes
@@ -100,7 +148,7 @@ var node = svg.selectAll(".node")
     .enter().append("circle")
     .attr("class", "node")
     .attr("r", 5)
-    .on('mouseover', hoverNode)
+    .on('mousedown', clickNode)
     .call(force.drag);
 
 // Update with the algorithm

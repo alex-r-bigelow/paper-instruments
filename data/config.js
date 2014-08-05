@@ -15,12 +15,12 @@ config = {
                     drag : {
                         hotSpot : new Shape('M0,0L100,0L100,100L0,100Z'),
                         events : {
-                            mousedown : function (event) {
-                                return event.which === 0;
+                            mousedown : function (event, config) {
+                                if ((event === null || event.which === 0) &&
+                                        (config.file_menu.currentState === 'hidden' && config.special_menu.currentState === 'hidden')) {
+                                    config.desktop.currentState = 'dragging';
+                                }
                             }
-                        },
-                        effects : function (config) {
-                            config.desktop.currentState = 'dragging';
                         }
                     }
                 },
@@ -32,23 +32,21 @@ config = {
                     elsewhere : {
                         hotSpot : empty_space,
                         events : {
-                            mouseup : function (event) {
-                                return event.which === 0;
+                            mouseup : function (event, config) {
+                                if (event === null || event.which === 0) {
+                                    config.desktop.currentState = 'untitled_folder';
+                                }
                             }
-                        },
-                        effects : function (config) {
-                            config.desktop.currentState = 'untitled_folder';
                         }
                     },
                     trash : {
                         hotSpot : new Shape('M300,300L400,300L400,400L300,400Z'),
                         events : {
-                            mouseup : function (event) {
-                                return event.which === 0;
+                            mouseup : function (event, config) {
+                                if (event === null || event.which === 0) {
+                                    config.desktop.currentState = 'full_trash';
+                                }
                             }
-                        },
-                        effects : function (config) {
-                            config.desktop.currentState = 'full_trash';
                         }
                     }
                 },
@@ -69,12 +67,12 @@ config = {
                     click : {
                         hotSpot : new Shape('M50,0L100,0L100,50L50,50Z'),
                         events : {
-                            mousedown : function (event) {
-                                return event.which === 0;
+                            mousedown : function (event, config) {
+                                if ((event === null || event.which === 0) &&
+                                        (config.special_menu.currentState === 'hidden' && config.desktop.currentState !== 'dragging')) {
+                                    config.file_menu.currentState = 'showing';
+                                }
                             }
-                        },
-                        effects : function (config) {
-                            config.file_menu.currentState = 'showing';
                         }
                     }
                 },
@@ -87,23 +85,21 @@ config = {
                         hotSpot : new Shape('M50,250L150,250L150,275L50,275Z'),
                         events : {
                             mouseup : function (event, config) {
-                                return event.which === 0 && config.desktop.currentState === 'empty_trash';
+                                if ((event === null || event.which === 0) && config.desktop.currentState === 'empty_trash') {
+                                    config.file_menu.currentState = 'hidden';
+                                    config.desktop.currentState = 'untitled_folder';
+                                }
                             }
-                        },
-                        effects : function (config) {
-                            config.file_menu.currentState = 'hidden';
-                            config.desktop.currentState = 'untitled_folder';
                         }
                     },
                     release : {
                         hotSpot : empty_space,
                         events : {
                             mouseup : function (event, config) {
-                                return event.which === 0 && Shape.findShape(event.target) !== 'showing'.actions.click.hotSpot;
+                                if (event === null || (event.which === 0 && Shape.findShape(event.target) !== 'showing'.actions.click.hotSpot)) {
+                                    config.file_menu.currentState = 'hidden';
+                                }
                             }
-                        },
-                        effects : function (config) {
-                            config.file_menu.currentState = 'hidden';
                         }
                     }
                 },
@@ -122,11 +118,11 @@ config = {
                         hotSpot : new Shape('M150,0L200,0L200,50L150,50Z'),
                         events : {
                             mousedown : function (event, config) {
-                                return event.which === 0;
+                                if ((event === null || event.which === 0) &&
+                                        (config.file_menu.currentState === 'hidden' && config.desktop.currentState !== 'dragging')) {
+                                    config.special_menu.currentState = 'showing';
+                                }
                             }
-                        },
-                        effects : function (config) {
-                            config.special_menu.currentState = 'showing';
                         }
                     }
                 },
@@ -139,22 +135,20 @@ config = {
                         hotSpot : new Shape('M150,250L250,250L250,275L150,275Z'),
                         events : {
                             mouseup : function (event, config) {
-                                return event.which === 0 && config.desktop.currentState === 'full_trash';
+                                if ((event === null || event.which === 0) && config.desktop.currentState === 'full_trash') {
+                                    config.special_menu.currentState = 'dialog';
+                                }
                             }
-                        },
-                        effects : function (config) {
-                            config.special_menu.currentState = 'dialog';
                         }
                     },
                     release : {
                         hotSpot : empty_space,
                         events : {
                             mouseup : function (event, config) {
-                                return event.which === 0 && Shape.findShape(event.target) !== 'showing'.actions.click.hotSpot;
+                                if (event === null || (event.which === 0 && Shape.findShape(event.target) !== 'showing'.actions.click.hotSpot)) {
+                                    config.special_menu.currentState = 'hidden';
+                                }
                             }
-                        },
-                        effects : function (config) {
-                            config.special_menu.currentState = 'hidden';
                         }
                     }
                 },
@@ -169,23 +163,17 @@ config = {
                         hotSpot : new Shape('M200,200L250,200L250,250L200,250Z'),
                         events : {
                             click : function (event, config) {
-                                return true;
+                                config.special_menu.currentState = 'hidden';
+                                config.desktop.currentState = 'empty_trash';
                             }
-                        },
-                        effects : function (config) {
-                            config.special_menu.currentState = 'hidden';
-                            config.desktop.currentState = 'empty_trash';
                         }
                     },
                     cancel : {
                         hotSpot : new Shape('M150,200L200,200L200,250L150,250Z'),
                         events : {
                             click : function (event, config) {
-                                return true;
+                                config.special_menu.currentState = 'hidden';
                             }
-                        },
-                        effects : function (config) {
-                            config.special_menu.currentState = 'hidden';
                         }
                     }
                 },
