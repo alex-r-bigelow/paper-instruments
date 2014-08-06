@@ -13,11 +13,14 @@ config = {
                 image : new Image('untitled_folder.png'),
                 actions : {
                     drag : {
-                        hotSpot : new Shape('M0,0L100,0L100,100L0,100Z'),
+                        hotSpot : new Shape(
+                            'M0,0L100,0L100,100L0,100Z', 1,
+                            function (config) {
+                                return config.file_menu.currentState === 'hidden' && config.special_menu.currentState === 'hidden';
+                            }),
                         events : {
                             mousedown : function (event, config) {
-                                if ((event === null || event.which === 0) &&
-                                        (config.file_menu.currentState === 'hidden' && config.special_menu.currentState === 'hidden')) {
+                                if (event === null || event.which === 0) {
                                     config.desktop.currentState = 'dragging';
                                 }
                             }

@@ -1,6 +1,8 @@
 /* globals jQuery, d3, document, config */
 "use strict";
 
+// Create a graph, exploring all possible interaction pathways:
+
 var graph = {
         nodes : [],
         links : []
@@ -10,50 +12,63 @@ var graph = {
 function constructGraph (config) {
     var tempConfig,
         stateTree,
-        state,
-        stateActions,
-        action,
+        stateString,
         comboString = "",
-        states = {},
-        possibleEvents = [],
+        currentStateStrings = {},
+        currentStates = {},
+        actions,
+        actionString,
         events,
-        event,
+        eventString,
         targetComboString;
     
     for (stateTree in config) {
         if (config.hasOwnProperty(stateTree)) {
-            comboString += config[stateTree].currentState;
-            
-            state = config[stateTree].states[config[stateTree].currentState];
-            states[stateTree] = config[stateTree].currentState;
-            
-            for (action in state.actions) {
-                if (state.actions.hasOwnProperty(action)) {
-                    possibleEvents.push(state.actions[action].events);
-                }
-            }
+            stateString = config[stateTree].currentState;
+            currentStateStrings[stateTree] = stateString;
+            currentStates[stateTree] = config[stateTree].states[stateString];
+            comboString += stateString;
         }
     }
     if (visited.hasOwnProperty(comboString) === false) {
         visited[comboString] = graph.nodes.length;
         
-        
         graph.nodes.push({
                 comboString : comboString,
-                states : states
-            });  // TODO: compose preview of image layers?
+                states : currentStates,
+                stateStrings : currentStateStrings
+            });
         
-        for (events = 0; events < possibleEvents.length; events += 1) {
-            for (event in possibleEvents[events]) {
-                if (possibleEvents[events].hasOwnProperty(event)) {
-                    tempConfig = jQuery.extend(true, {}, config);    // deep clone; this allows effect functions to do anything they want to the config object
-                    possibleEvents[events][event](null, tempConfig);
-                    targetComboString = constructGraph(tempConfig);
-                    if (targetComboString !== comboString) {
-                        graph.links.push({
-                            source : visited[comboString],
-                            target : visited[targetComboString]
-                        });
+        for (stateTree in currentStates) {
+            if (currentStates.hasOwnProperty(stateTree)) {
+                actions = currentStates[stateTree].actions;
+                for (actionString in actions) {
+                    if (actions.hasOwnProperty(actionString)) {
+                        // Don't permute if the hotSpot isn't even visible
+                        if (actions[actionString].hotSpot.isVisible(config) === true) {
+                            events = actions[actionString].events;
+                            for (eventString in events) {
+                                if (events.hasOwnProperty(eventString)) {
+                                    // deep clone config; this allows effect functions
+                                    // to do anything they want to the config object
+                                    tempConfig = jQuery.extend(true, {}, config);
+                                    
+                                    // apply the event to our clone (with a null event object)
+                                    events[eventString](null, tempConfig);
+                                    
+                                    // recurse
+                                    targetComboString = constructGraph(tempConfig);
+                                    
+                                    // add links to the new nodes; don't create self-edges
+                                    if (targetComboString !== comboString) {
+                                        graph.links.push({
+                                            source : visited[comboString],
+                                            target : visited[targetComboString]
+                                        });
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -65,16 +80,18 @@ function constructGraph (config) {
 
 constructGraph(config);
 
-// Set up the preview:
+// Show the interface:
 
 function updatePreview() {
-    var currentComboString = "",
+    var comboString = "",
         images = [],
+        hotSpots = [],
         stateTree;
     
     for (stateTree in config) {
         if (config.hasOwnProperty(stateTree)) {
             images.push(config[stateTree].states[config[stateTree].currentState].image);
+            comboString += config[stateTree].currentState;
         }
     }
     
@@ -86,87 +103,116 @@ function updatePreview() {
         .data(images);
     
     i.enter().append("img")
-        .attr("src", function (i) { return 'data/' + i.src; })
+        .attr("src", function (i) {
+                if (i.src !== '') {
+                    return 'data/' + i.src;
+                } else {
+                    return '';
+                }
+            })
         .attr("z-index", function (i) { return i.zIndex; });
     
     i.exit().remove();
+    
+    return comboString;
 }
-updatePreview();
+var currentComboString = updatePreview();
 
 
-// Display the graph:
+// Visualize the graph:
 
-// Set up the graph svg element
-var svg = d3.select("svg#graph"),
-    width = Number(svg.attr("width")),
-    height = Number(svg.attr("height"));
-
-// Add the arrow template
-svg.append("svg:defs").selectAll("marker")
-    .data(["end"])      // Different link/path types can be defined here
-    .enter().append("svg:marker")    // This section adds in the arrows
-    .attr("id", String)
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
-    .attr("orient", "auto")
-    .append("svg:path")
-    .attr("d", "M0,-5L10,0L0,5");
-
-// Start the layout algorithm
-var force = d3.layout.force()
-    .charge(-480)
-    .linkDistance(120)
-    .size([width, height])
-    .nodes(graph.nodes)
-    .links(graph.links)
-    .start();
-
-// Add the links and arrows
-var path = svg.append("svg:g").selectAll("path")
-    .data(force.links())
-    .enter().append("svg:path")
-    .attr("class", "link")
-    .attr("marker-end", "url(#end)");
-
-// Node hover helper function
+// Helper functions
 function clickNode (d) {
-    var tree;
-    for (tree in d.states) {
-        if (d.states.hasOwnProperty(tree)) {
-            config[tree].currentState = d.states[tree];
+    var stateTree;
+    for (stateTree in d.stateStrings) {
+        if (d.stateStrings.hasOwnProperty(stateTree)) {
+            config[stateTree].currentState = d.stateStrings[stateTree];
         }
     }
-    updatePreview();
+    document.getElementById(currentComboString).setAttribute("class", "node");
+    currentComboString = updatePreview();
+    document.getElementById(currentComboString).setAttribute("class", "active node");
 }
 
-// Add the nodes
-var node = svg.selectAll(".node")
-    .data(graph.nodes)
-    .enter().append("circle")
-    .attr("class", "node")
-    .attr("r", 5)
-    .on('mousedown', clickNode)
-    .call(force.drag);
-
-// Update with the algorithm
-force.on("tick",
-    function () {
-        path.attr("d", function(d) {
-            var dx = d.target.x - d.source.x,
-                dy = d.target.y - d.source.y,
-                dr = Math.sqrt(dx * dx + dy * dy);
-            return "M" + 
-                d.source.x + "," + 
-                d.source.y + "A" + 
-                dr + "," + dr + " 0 0,1 " + 
-                d.target.x + "," + 
-                d.target.y;
-        });
+function initGraph() {
+    // Set up the graph svg element
+    var template = document.getElementById("graphTemplate"),
+        width = Number(template.getAttribute("width")),
+        height = Number(template.getAttribute("height")),
+        style = template.getAttribute("style"),
+        svg = d3.select("body").selectAll("svg.graph")
+            .data(["graph"])    // only make one view...
+            .enter().append("svg")
+            .attr("id", function (d) { return d; })
+            .attr("class", "graph")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("style", style);
     
-        node.attr("transform", function(d) { 
-            return "translate(" + d.x + "," + d.y + ")";
-        });
-});
+    // Add the arrow template
+    svg.append("svg:defs").selectAll("marker")
+        .data(["end"])      // Different link/path types can be defined here
+        .enter().append("svg:marker")    // This section adds in the arrows
+        .attr("id", String)
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 15)
+        .attr("refY", -1.5)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("svg:path")
+        .attr("d", "M0,-5L10,0L0,5");
+    
+    // Start the layout algorithm
+    var force = d3.layout.force()
+        .charge(-480)
+        .linkDistance(120)
+        .size([width, height])
+        .nodes(graph.nodes)
+        .links(graph.links)
+        .start();
+    
+    // Add the links and arrows
+    var path = svg.append("svg:g").selectAll("path")
+        .data(force.links())
+        .enter().append("svg:path")
+        .attr("class", "link")
+        .attr("marker-end", "url(#end)");
+    
+    // Add the nodes
+    var node = svg.selectAll(".node")
+        .data(graph.nodes)
+        .enter().append("circle")
+        .attr("id", function (d) { return d.comboString; })
+        .attr("class", function (d) {
+            if (d.comboString === currentComboString) {
+                return "active node";
+            } else {
+                return "node";
+            }
+        })
+        .attr("r", 5)
+        .on('dblclick', clickNode)
+        .call(force.drag);
+    
+    // Update with the algorithm
+    force.on("tick",
+        function () {
+            path.attr("d", function(d) {
+                var dx = d.target.x - d.source.x,
+                    dy = d.target.y - d.source.y,
+                    dr = Math.sqrt(dx * dx + dy * dy);
+                return "M" + 
+                    d.source.x + "," + 
+                    d.source.y + "A" + 
+                    dr + "," + dr + " 0 0,1 " + 
+                    d.target.x + "," + 
+                    d.target.y;
+            });
+        
+            node.attr("transform", function(d) { 
+                return "translate(" + d.x + "," + d.y + ")";
+            });
+    });
+}
+initGraph();
