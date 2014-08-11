@@ -1,4 +1,4 @@
-/* globals Image, Shape, empty_space, no_image, config:true */
+/* globals Image, Shape, empty_space, no_image, MetaActionStep, config:true, metaActions:true */
 "use strict";
 
 config = {
@@ -14,13 +14,13 @@ config = {
                 actions : {
                     drag : {
                         hotSpot : new Shape(
-                            'M0,0L100,0L100,100L0,100Z', 1,
+                            'M0,0L100,0L100,100L0,100Z',
                             function (config) {
                                 return config.file_menu.currentState === 'hidden' && config.special_menu.currentState === 'hidden';
                             }),
                         events : {
                             mousedown : function (event, config) {
-                                if (event === null || event.which === 0) {
+                                if (event === null || event.which === 1) {
                                     config.desktop.currentState = 'dragging';
                                 }
                             }
@@ -36,7 +36,7 @@ config = {
                         hotSpot : empty_space,
                         events : {
                             mouseup : function (event, config) {
-                                if (event === null || event.which === 0) {
+                                if (event === null || event.which === 1) {
                                     config.desktop.currentState = 'untitled_folder';
                                 }
                             }
@@ -46,7 +46,7 @@ config = {
                         hotSpot : new Shape('M300,300L400,300L400,400L300,400Z'),
                         events : {
                             mouseup : function (event, config) {
-                                if (event === null || event.which === 0) {
+                                if (event === null || event.which === 1) {
                                     config.desktop.currentState = 'full_trash';
                                 }
                             }
@@ -68,11 +68,13 @@ config = {
                 image : no_image,
                 actions : {
                     click : {
-                        hotSpot : new Shape('M50,0L100,0L100,50L50,50Z'),
+                        hotSpot : new Shape('M50,0L100,0L100,50L50,50Z',
+                            function (config) {
+                                return config.special_menu.currentState === 'hidden' && config.desktop.currentState !== 'dragging';
+                            }),
                         events : {
                             mousedown : function (event, config) {
-                                if ((event === null || event.which === 0) &&
-                                        (config.special_menu.currentState === 'hidden' && config.desktop.currentState !== 'dragging')) {
+                                if (event === null || event.which === 1) {
                                     config.file_menu.currentState = 'showing';
                                 }
                             }
@@ -82,13 +84,16 @@ config = {
                 masks : {}
             },
             showing : {
-                image : new Image('file_menu.png'),
+                image : new Image('file_menu.png', 2),
                 actions : {
-                    click : {
-                        hotSpot : new Shape('M50,250L150,250L150,275L50,275Z'),
+                    select : {
+                        hotSpot : new Shape('M50,250L150,250L150,275L50,275Z',
+                            function (config) {
+                                return config.desktop.currentState === 'empty_trash';
+                            }),
                         events : {
                             mouseup : function (event, config) {
-                                if ((event === null || event.which === 0) && config.desktop.currentState === 'empty_trash') {
+                                if (event === null || event.which === 1) {
                                     config.file_menu.currentState = 'hidden';
                                     config.desktop.currentState = 'untitled_folder';
                                 }
@@ -99,7 +104,7 @@ config = {
                         hotSpot : empty_space,
                         events : {
                             mouseup : function (event, config) {
-                                if (event === null || (event.which === 0 && Shape.findShape(event.target) !== 'showing'.actions.click.hotSpot)) {
+                                if (event === null || event.which === 1) {
                                     config.file_menu.currentState = 'hidden';
                                 }
                             }
@@ -118,11 +123,13 @@ config = {
                 image : no_image,
                 actions : {
                     click : {
-                        hotSpot : new Shape('M150,0L200,0L200,50L150,50Z'),
+                        hotSpot : new Shape('M150,0L200,0L200,50L150,50Z',
+                            function (config) {
+                                return config.file_menu.currentState === 'hidden' && config.desktop.currentState !== 'dragging';
+                            }),
                         events : {
                             mousedown : function (event, config) {
-                                if ((event === null || event.which === 0) &&
-                                        (config.file_menu.currentState === 'hidden' && config.desktop.currentState !== 'dragging')) {
+                                if (event === null || event.which === 1) {
                                     config.special_menu.currentState = 'showing';
                                 }
                             }
@@ -132,13 +139,16 @@ config = {
                 masks : {}
             },
             showing : {
-                image : new Image('special_menu.png'),
+                image : new Image('special_menu.png', 2),
                 actions : {
-                    click : {
-                        hotSpot : new Shape('M150,250L250,250L250,275L150,275Z'),
+                    select : {
+                        hotSpot : new Shape('M150,250L250,250L250,275L150,275Z',
+                            function (config) {
+                                return config.desktop.currentState === 'full_trash';
+                            }),
                         events : {
                             mouseup : function (event, config) {
-                                if ((event === null || event.which === 0) && config.desktop.currentState === 'full_trash') {
+                                if (event === null || event.which === 1) {
                                     config.special_menu.currentState = 'dialog';
                                 }
                             }
@@ -148,7 +158,7 @@ config = {
                         hotSpot : empty_space,
                         events : {
                             mouseup : function (event, config) {
-                                if (event === null || (event.which === 0 && Shape.findShape(event.target) !== 'showing'.actions.click.hotSpot)) {
+                                if (event === null || event.which === 1) {
                                     config.special_menu.currentState = 'hidden';
                                 }
                             }
@@ -160,7 +170,7 @@ config = {
                 }
             },
             dialog : {
-                image : new Image('dialog.png'),
+                image : new Image('dialog.png', 2),
                 actions : {
                     ok : {
                         hotSpot : new Shape('M200,200L250,200L250,250L200,250Z'),
@@ -191,3 +201,16 @@ config = {
 config.desktop.currentState = 'empty_trash';
 config.file_menu.currentState = 'hidden';
 config.special_menu.currentState = 'hidden';
+
+metaActions = {
+    delete_folder : [
+        new MetaActionStep("desktop", "dragging", "trash"),
+        new MetaActionStep("special_menu", "hidden", "click"),
+        new MetaActionStep("special_menu", "showing", "select"),
+        new MetaActionStep("special_menu", "dialog", "ok")
+    ],
+    create_folder : [
+        new MetaActionStep("file_menu", "hidden", "click"),
+        new MetaActionStep("file_menu", "showing", "select")
+    ]
+};

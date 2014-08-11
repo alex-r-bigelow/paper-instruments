@@ -1,4 +1,4 @@
-/* globals jQuery, d3, document, config */
+/* globals jQuery, d3, document, config, metaActions */
 "use strict";
 
 // Create a graph, exploring all possible interaction pathways:
@@ -7,7 +7,9 @@ var graph = {
         nodes : [],
         links : []
     },
-    visited = {};
+    linkLookup = {},
+    visited = {},
+    metaSeeds = {};
 
 function constructGraph (config) {
     var tempConfig,
@@ -20,8 +22,10 @@ function constructGraph (config) {
         actionString,
         events,
         eventString,
-        targetComboString;
+        targetComboString,
+        meta;
     
+    // Extract the starting states
     for (stateTree in config) {
         if (config.hasOwnProperty(stateTree)) {
             stateString = config[stateTree].currentState;
@@ -30,22 +34,39 @@ function constructGraph (config) {
             comboString += stateString;
         }
     }
+    // If we haven't been in this exact state before...
     if (visited.hasOwnProperty(comboString) === false) {
         visited[comboString] = graph.nodes.length;
         
+        // ... add the graph node
         graph.nodes.push({
                 comboString : comboString,
                 states : currentStates,
                 stateStrings : currentStateStrings
             });
         
+        // ... recurse for all the possible next states
         for (stateTree in currentStates) {
             if (currentStates.hasOwnProperty(stateTree)) {
                 actions = currentStates[stateTree].actions;
                 for (actionString in actions) {
                     if (actions.hasOwnProperty(actionString)) {
-                        // Don't permute if the hotSpot isn't even visible
+                        // Don't follow actions if their hotSpots aren't even visible
                         if (actions[actionString].hotSpot.isVisible(config) === true) {
+                            // Are we potentially starting a meta action?
+                            for (meta in metaActions) {
+                                if (metaActions.hasOwnProperty(meta)) {
+                                    if (stateTree === metaActions[meta][0].stateTree &&
+                                            config[stateTree].currentState === metaActions[meta][0].state &&
+                                            actionString === metaActions[meta][0].action) {
+                                        if (metaSeeds.hasOwnProperty(meta) === false) {
+                                            metaSeeds[meta] = [];
+                                        }
+                                        metaSeeds[meta].push(config);
+                                    }
+                                }
+                            }
+                            
                             events = actions[actionString].events;
                             for (eventString in events) {
                                 if (events.hasOwnProperty(eventString)) {
@@ -59,12 +80,15 @@ function constructGraph (config) {
                                     // recurse
                                     targetComboString = constructGraph(tempConfig);
                                     
-                                    // add links to the new nodes; don't create self-edges
+                                    // don't create self-edges in the graph
                                     if (targetComboString !== comboString) {
+                                        // add the links to the new nodes
                                         graph.links.push({
                                             source : visited[comboString],
-                                            target : visited[targetComboString]
+                                            target : visited[targetComboString],
+                                            metaActions : []
                                         });
+                                        linkLookup[comboString + "->" + targetComboString] = graph.links[graph.links.length - 1];
                                     }
                                 }
                             }
@@ -77,47 +101,178 @@ function constructGraph (config) {
     
     return comboString;
 }
+constructGraph(jQuery.extend(true, {}, config));
 
-constructGraph(config);
+// Flag the links that are part of a metaAction
+function flagMetas() {
+    var meta,
+        tempConfig,
+        i,
+        j,
+        source,
+        target,
+        success,
+        linksToFlag,
+        stateTree,
+        state,
+        action,
+        temp;
+    // loop through potential starting locations
+    for (meta in metaSeeds) {
+        if (metaSeeds.hasOwnProperty(meta)) {
+            for (j = 0; j < metaSeeds[meta].length; j += 1) {
+                linksToFlag = [];
+                success = true;
+                tempConfig = metaSeeds[meta][j];
+                // loop through the meta action's list of actions
+                for (i = 0; i < metaActions[meta].length; i += 1) {
+                    state = tempConfig[metaActions[meta][i].stateTree].currentState;
+                    
+                    // It's possible that we're not even in the right state to perform
+                    // this step...
+                    if (state !== metaActions[meta][i].state) {
+                        success = false;
+                        break;
+                    }
+                    
+                    action = tempConfig[metaActions[meta][i].stateTree].states[state].actions[metaActions[meta][i].action];
+                    
+                    // if we can't see the hotSpot, the chain is broken;
+                    // there's no way to perform the next action in the meta action
+                    if (action.hotSpot.isVisible(tempConfig) === false) {
+                        success = false;
+                        break;
+                    } else {
+                        // Get the source combo string
+                        source = "";
+                        for (stateTree in tempConfig) {
+                            if (tempConfig.hasOwnProperty(stateTree)) {
+                                source += tempConfig[stateTree].currentState;
+                            }
+                        }
+                        // Apply an event (just pick one - they SHOULD have the same
+                        // side effects)
+                        for (temp in action.events) {
+                            if (action.events.hasOwnProperty(temp)) {
+                                action.events[temp](null, tempConfig);
+                                break;
+                            }
+                        }
+                        // Get the target combo string
+                        target = "";
+                        for (stateTree in tempConfig) {
+                            if (tempConfig.hasOwnProperty(stateTree)) {
+                                target += tempConfig[stateTree].currentState;
+                            }
+                        }
+                        if (target !== source) {
+                            linksToFlag.push(source + "->" + target);
+                        }
+                    }
+                }
+                if (success === true) {
+                    // Mark all the relevant links that they belong
+                    // to the meta action
+                    for (i = 0; i < linksToFlag.length; i += 1) {
+                        temp = linkLookup[linksToFlag[i]].metaActions;
+                        if (temp.indexOf(meta) === -1) {
+                            temp.push(meta);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+flagMetas();
 
 // Show the interface:
 
-function updatePreview() {
-    var comboString = "",
-        images = [],
-        hotSpots = [],
-        stateTree;
+var currentComboString = null;
+
+function updateAll() {
+    var images = [],
+        actions = [],
+        stateTree,
+        state,
+        action,
+        temp;
     
+    // First, remove the previous graph highlight
+    temp = document.getElementById(currentComboString);
+    if (temp !== null) {
+        temp.setAttribute("class", "node");
+    }
+    
+    // Now figure out the new currentComboString while collecting the relevant images and actions
+    currentComboString = "";
     for (stateTree in config) {
         if (config.hasOwnProperty(stateTree)) {
-            images.push(config[stateTree].states[config[stateTree].currentState].image);
-            comboString += config[stateTree].currentState;
+            currentComboString += config[stateTree].currentState;
+            
+            state = config[stateTree].states[config[stateTree].currentState];
+            images.push(state.image);
+            for (action in state.actions) {
+                if (state.actions.hasOwnProperty(action)) {
+                    if (state.actions[action].hotSpot.isVisible(config) === true) {
+                        actions.push(state.actions[action]);
+                    }
+                }
+            }
         }
     }
     
-    document.getElementById("previewImages").innerHTML = "";
+    // Because SVG uses document order instead of z-index, we need to sort the actions
+    actions.sort(function (a, b) {
+        return a.hotSpot.zIndex - b.hotSpot.zIndex;
+    });
     
-    var preview = d3.select('#previewImages');
-
-    var i = preview.selectAll("img")
+    // Highlight the relevant node in the graph
+    temp = document.getElementById(currentComboString);
+    if (temp !== null) {
+        temp.setAttribute("class", "active node");
+    }
+    
+    // Update the preview images
+    var previewImages = d3.select('#previewImages')
+        .selectAll("img")
         .data(images);
     
-    i.enter().append("img")
-        .attr("src", function (i) {
+    previewImages.enter().append("img");
+    
+    previewImages.attr("src", function (i) {
                 if (i.src !== '') {
                     return 'data/' + i.src;
                 } else {
                     return '';
                 }
             })
-        .attr("z-index", function (i) { return i.zIndex; });
+        .attr("style", function (i) { return "z-index:"+i.zIndex; });
     
-    i.exit().remove();
+    // Update the hotSpots
+    var previewHotSpots = d3.select("#hotSpots")
+        .selectAll("path")
+        .data(actions);
     
-    return comboString;
+    previewHotSpots.enter().append("path");
+    
+    previewHotSpots.attr("d", function (d) { return d.hotSpot.d; })
+        .attr("id", function (d) { return "HotSpot" + d.hotSpot.hash; })
+        .each(function (d) {
+            var eventString;
+            for (eventString in d.events) {
+                if (d.events.hasOwnProperty(eventString)) {
+                    jQuery('#HotSpot' + d.hotSpot.hash).on(eventString, function (event) {
+                            d.events[eventString](event, config);
+                            updateAll();
+                        }); // jshint ignore:line
+                }
+            }
+        });
+    
+    previewHotSpots.exit().remove();
 }
-var currentComboString = updatePreview();
-
+updateAll();
 
 // Visualize the graph:
 
@@ -129,9 +284,8 @@ function clickNode (d) {
             config[stateTree].currentState = d.stateStrings[stateTree];
         }
     }
-    document.getElementById(currentComboString).setAttribute("class", "node");
-    currentComboString = updatePreview();
-    document.getElementById(currentComboString).setAttribute("class", "active node");
+    
+    updateAll();
 }
 
 function initGraph() {
@@ -140,8 +294,9 @@ function initGraph() {
         width = Number(template.getAttribute("width")),
         height = Number(template.getAttribute("height")),
         style = template.getAttribute("style"),
-        svg = d3.select("body").selectAll("svg.graph")
-            .data(["graph"])    // only make one view...
+        svg = d3.select("body")
+            .selectAll("svg.graph")
+            .data(["graph"])
             .enter().append("svg")
             .attr("id", function (d) { return d; })
             .attr("class", "graph")
@@ -176,24 +331,32 @@ function initGraph() {
     var path = svg.append("svg:g").selectAll("path")
         .data(force.links())
         .enter().append("svg:path")
-        .attr("class", "link")
+        .attr("class", function (d) {
+            var result = "link";
+            if (d.metaActions.length > 0) {
+                result += " " + d.metaActions.join(" ");
+            }
+            return result;
+        })
         .attr("marker-end", "url(#end)");
     
     // Add the nodes
     var node = svg.selectAll(".node")
-        .data(graph.nodes)
-        .enter().append("circle")
+        .data(graph.nodes);
+    
+    node.enter().append("circle")
         .attr("id", function (d) { return d.comboString; })
-        .attr("class", function (d) {
-            if (d.comboString === currentComboString) {
-                return "active node";
-            } else {
-                return "node";
-            }
-        })
         .attr("r", 5)
         .on('dblclick', clickNode)
         .call(force.drag);
+    
+    node.attr("class", function (d) {
+        if (d.comboString === currentComboString) {
+            return "active node";
+        } else {
+            return "node";
+        }
+    });
     
     // Update with the algorithm
     force.on("tick",
