@@ -24,7 +24,9 @@ function constructGraph (config) {
         events,
         eventString,
         targetComboString,
-        meta;
+        meta,
+        entity,
+        i;
     
     // Extract the starting states
     for (stateTree in config) {
@@ -55,15 +57,24 @@ function constructGraph (config) {
                         // Don't follow actions if their hotSpots aren't even visible
                         if (actions[actionString].hotSpot.isVisible(config) === true) {
                             // Are we potentially starting a meta action?
-                            for (meta in metaActions) {
-                                if (metaActions.hasOwnProperty(meta)) {
-                                    if (stateTree === metaActions[meta][0].stateTree &&
-                                            config[stateTree].currentState === metaActions[meta][0].state &&
-                                            actionString === metaActions[meta][0].action) {
-                                        if (metaSeeds.hasOwnProperty(meta) === false) {
-                                            metaSeeds[meta] = [];
+                            for (entity in metaActions) {
+                                if (metaActions.hasOwnProperty(entity)) {
+                                    for (meta in metaActions[entity]) {
+                                        if (metaActions[entity].hasOwnProperty(meta)) {
+                                            for (i = 0; i < metaActions[entity][meta].length; i += 1) {
+                                                if (stateTree === metaActions[entity][meta][i][0].stateTree &&
+                                                        config[stateTree].currentState === metaActions[entity][meta][i][0].state &&
+                                                        actionString === metaActions[entity][meta][i][0].action) {
+                                                    if (metaSeeds.hasOwnProperty(entity) === false) {
+                                                        metaSeeds[entity] = {};
+                                                    }
+                                                    if (metaSeeds[entity].hasOwnProperty(meta) === false) {
+                                                        metaSeeds[entity][meta] = [];
+                                                    }
+                                                    metaSeeds[entity][meta].push(config);
+                                                }
+                                            }
                                         }
-                                        metaSeeds[meta].push(config);
                                     }
                                 }
                             }
@@ -106,9 +117,11 @@ function constructGraph (config) {
 // Flag the links that are part of a metaAction
 function flagMetas() {
     var meta,
+        entity,
         tempConfig,
         i,
         j,
+        k,
         source,
         target,
         success,
@@ -118,65 +131,71 @@ function flagMetas() {
         action,
         temp;
     // loop through potential starting locations
-    for (meta in metaSeeds) {
-        if (metaSeeds.hasOwnProperty(meta)) {
-            for (j = 0; j < metaSeeds[meta].length; j += 1) {
-                linksToFlag = [];
-                success = true;
-                tempConfig = metaSeeds[meta][j];
-                // loop through the meta action's list of actions
-                for (i = 0; i < metaActions[meta].length; i += 1) {
-                    state = tempConfig[metaActions[meta][i].stateTree].currentState;
-                    
-                    // It's possible that we're not even in the right state to perform
-                    // this step...
-                    if (state !== metaActions[meta][i].state) {
-                        success = false;
-                        break;
-                    }
-                    
-                    action = tempConfig[metaActions[meta][i].stateTree].states[state].actions[metaActions[meta][i].action];
-                    
-                    // if we can't see the hotSpot, the chain is broken;
-                    // there's no way to perform the next action in the meta action
-                    if (action.hotSpot.isVisible(tempConfig) === false) {
-                        success = false;
-                        break;
-                    } else {
-                        // Get the source combo string
-                        source = "";
-                        for (stateTree in tempConfig) {
-                            if (tempConfig.hasOwnProperty(stateTree)) {
-                                source += tempConfig[stateTree].currentState;
+    for (entity in metaSeeds){
+        if (metaSeeds.hasOwnProperty(entity)) {
+            for (meta in metaSeeds[entity]) {
+                if (metaSeeds[entity].hasOwnProperty(meta)) {
+                    for (i = 0; i < metaSeeds[entity][meta].length; i += 1) {
+                        linksToFlag = [];
+                        success = true;
+                        tempConfig = metaSeeds[entity][meta][i];
+                        // loop through the potential steps TODO: may be a bug here if there's more than one sequence...
+                        for (j = 0; j < metaActions[entity][meta].length; j += 1) {
+                            for (k = 0; k < metaActions[entity][meta][j].length; k += 1) {
+                                state = tempConfig[metaActions[entity][meta][j][k].stateTree].currentState;
+                                
+                                // It's possible that we're not even in the right state to perform
+                                // this step...
+                                if (state !== metaActions[entity][meta][j][k].state) {
+                                    success = false;
+                                    break;
+                                }
+                                
+                                action = tempConfig[metaActions[entity][meta][j][k].stateTree].states[state].actions[metaActions[entity][meta][j][k].action];
+                                
+                                // if we can't see the hotSpot, the chain is broken;
+                                // there's no way to perform the next action in the meta action
+                                if (action.hotSpot.isVisible(tempConfig) === false) {
+                                    success = false;
+                                    break;
+                                } else {
+                                    // Get the source combo string
+                                    source = "";
+                                    for (stateTree in tempConfig) {
+                                        if (tempConfig.hasOwnProperty(stateTree)) {
+                                            source += tempConfig[stateTree].currentState;
+                                        }
+                                    }
+                                    // Apply an event (just pick one - they SHOULD have the same
+                                    // side effects)
+                                    for (temp in action.events) {
+                                        if (action.events.hasOwnProperty(temp)) {
+                                            action.events[temp](null, tempConfig);
+                                            break;
+                                        }
+                                    }
+                                    // Get the target combo string
+                                    target = "";
+                                    for (stateTree in tempConfig) {
+                                        if (tempConfig.hasOwnProperty(stateTree)) {
+                                            target += tempConfig[stateTree].currentState;
+                                        }
+                                    }
+                                    if (target !== source) {
+                                        linksToFlag.push(source + "->" + target);
+                                    }
+                                }
                             }
                         }
-                        // Apply an event (just pick one - they SHOULD have the same
-                        // side effects)
-                        for (temp in action.events) {
-                            if (action.events.hasOwnProperty(temp)) {
-                                action.events[temp](null, tempConfig);
-                                break;
+                        if (success === true) {
+                            // Mark all the relevant links that they belong
+                            // to the meta action
+                            for (j = 0; j < linksToFlag.length; j += 1) {
+                                temp = linkLookup[linksToFlag[j]].metaActions;
+                                if (temp.indexOf(meta) === -1) {
+                                    temp.push(meta);
+                                }
                             }
-                        }
-                        // Get the target combo string
-                        target = "";
-                        for (stateTree in tempConfig) {
-                            if (tempConfig.hasOwnProperty(stateTree)) {
-                                target += tempConfig[stateTree].currentState;
-                            }
-                        }
-                        if (target !== source) {
-                            linksToFlag.push(source + "->" + target);
-                        }
-                    }
-                }
-                if (success === true) {
-                    // Mark all the relevant links that they belong
-                    // to the meta action
-                    for (i = 0; i < linksToFlag.length; i += 1) {
-                        temp = linkLookup[linksToFlag[i]].metaActions;
-                        if (temp.indexOf(meta) === -1) {
-                            temp.push(meta);
                         }
                     }
                 }

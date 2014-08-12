@@ -40,11 +40,12 @@ Shape.findShape = function (domTarget) {
     return Shape.ALL[hash];
 };
 
-function MetaActionStep(stateTree, state, action) {
+function MetaActionStep(stateTree, state, action, actionType) {
     var self = this;
     self.stateTree = stateTree;
     self.state = state;
     self.action = action;
+    self.actionType = actionType;
 }
 
 // Global variables

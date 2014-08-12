@@ -203,14 +203,20 @@ config.file_menu.currentState = 'hidden';
 config.special_menu.currentState = 'hidden';
 
 metaActions = {
-    delete_folder : [
-        new MetaActionStep("desktop", "dragging", "trash"),
-        new MetaActionStep("special_menu", "hidden", "click"),
-        new MetaActionStep("special_menu", "showing", "select"),
-        new MetaActionStep("special_menu", "dialog", "ok")
-    ],
-    create_folder : [
-        new MetaActionStep("file_menu", "hidden", "click"),
-        new MetaActionStep("file_menu", "showing", "select")
-    ]
+    folder : {
+        "delete" : [
+            [
+                new MetaActionStep("desktop", "dragging", "trash", "direct manipulation"),
+                new MetaActionStep("special_menu", "hidden", "click", "gui"),
+                new MetaActionStep("special_menu", "showing", "select", "gui"),
+                new MetaActionStep("special_menu", "dialog", "ok", "gui")
+            ]
+        ],
+        "create" : [
+            [
+                new MetaActionStep("file_menu", "hidden", "click", "gui"),
+                new MetaActionStep("file_menu", "showing", "select", "gui")
+            ]
+        ]
+    }
 };
