@@ -9,7 +9,8 @@ var graph = {
     },
     linkLookup = {},
     visited = {},
-    metaSeeds = {};
+    metaSeeds = {},
+    currentComboString = null;
 
 function constructGraph (config) {
     var tempConfig,
@@ -101,7 +102,6 @@ function constructGraph (config) {
     
     return comboString;
 }
-constructGraph(jQuery.extend(true, {}, config));
 
 // Flag the links that are part of a metaAction
 function flagMetas() {
@@ -184,11 +184,8 @@ function flagMetas() {
         }
     }
 }
-flagMetas();
 
 // Show the interface:
-
-var currentComboString = null;
 
 function updateAll() {
     var images = [],
@@ -279,7 +276,6 @@ function updateAll() {
     
     previewHotSpots.exit().remove();
 }
-updateAll();
 
 // Visualize the graph:
 
@@ -297,19 +293,27 @@ function clickNode (d) {
 
 function initGraph() {
     // Set up the graph svg element
-    var template = document.getElementById("graphTemplate"),
-        width = Number(template.getAttribute("width")),
-        height = Number(template.getAttribute("height")),
-        style = template.getAttribute("style"),
-        svg = d3.select("body")
-            .selectAll("svg.graph")
-            .data(["graph"])
-            .enter().append("svg")
-            .attr("id", function (d) { return d; })
-            .attr("class", "graph")
-            .attr("width", width)
-            .attr("height", height)
-            .attr("style", style);
+    var bounds = document.getElementById("configContents").getBoundingClientRect(),
+        width,
+        height,
+        style,
+        svg;
+    
+    if (bounds.width === 0) {
+        return;
+    }
+    
+    // I'm guessing with current styling, etc, we need 50px per node?
+    width = graph.nodes.length * 50;
+    height = graph.nodes.length * 50;
+    svg = d3.select("#graphContainer")
+        .selectAll("svg.graph")
+        .data(["graph"])
+        .enter().append("svg")
+        .attr("id", function (d) { return d; })
+        .attr("class", "graph")
+        .attr("width", width)
+        .attr("height", height);
     
     // Add the arrow template
     svg.append("svg:defs").selectAll("marker")
@@ -385,7 +389,6 @@ function initGraph() {
             });
     });
 }
-initGraph();
 
 // Visualize the process matrix:
 
@@ -395,4 +398,24 @@ function initMatrix() {
     // a proof-of-concept
     var matrix;
 }
+
+constructGraph(jQuery.extend(true, {}, config));
+flagMetas();
+updateAll();
+initGraph();
 initMatrix();
+
+// Handle collapsing / expanding the config panel
+jQuery("#collapseBar").on("click", function (event) {
+    var panel = jQuery("#configPanel"),
+        collapsed = panel.attr('class');
+    if (typeof collapsed !== typeof undefined && collapsed !== false) {
+        panel.removeAttr('class');
+        jQuery("#collapseBar img").attr("src", "images/collapse.png");
+    } else {
+        panel.attr("class", "collapsed");
+        jQuery("#collapseBar img").attr("src", "images/expand.png");
+    }
+    initGraph();
+    initMatrix();
+});

@@ -1,5 +1,7 @@
 "use strict";
 
+// Classes used in previews
+
 function Image(src,z) {
     var self = this;
     self.src = src;
@@ -44,6 +46,8 @@ function MetaActionStep(stateTree, state, action) {
     self.state = state;
     self.action = action;
 }
+
+// Global variables
 
 var no_image = new Image('',1),
     empty_space = new Shape('M0,0L512,0L512,343L0,343Z',true,0), // TODO: figure this out automatically
