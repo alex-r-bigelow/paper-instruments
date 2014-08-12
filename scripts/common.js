@@ -46,7 +46,7 @@ function MetaActionStep(stateTree, state, action) {
 }
 
 var no_image = new Image('',1),
-    empty_space = new Shape('M0,0L719,0L719,480L0,480Z',true,0), // TODO: figure this out automatically
+    empty_space = new Shape('M0,0L512,0L512,343L0,343Z',true,0), // TODO: figure this out automatically
     config,
     metaActions;
 

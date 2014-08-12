@@ -14,7 +14,7 @@ config = {
                 actions : {
                     drag : {
                         hotSpot : new Shape(
-                            'M0,0L100,0L100,100L0,100Z',
+                            'M435,85L510,85L510,125L435,125Z',
                             function (config) {
                                 return config.file_menu.currentState === 'hidden' && config.special_menu.currentState === 'hidden';
                             }),
@@ -43,7 +43,7 @@ config = {
                         }
                     },
                     trash : {
-                        hotSpot : new Shape('M300,300L400,300L400,400L300,400Z'),
+                        hotSpot : new Shape('M450,285L495,285L495,340L450,340Z'),
                         events : {
                             mouseup : function (event, config) {
                                 if (event === null || event.which === 1) {
@@ -68,7 +68,7 @@ config = {
                 image : no_image,
                 actions : {
                     click : {
-                        hotSpot : new Shape('M50,0L100,0L100,50L50,50Z',
+                        hotSpot : new Shape('M30,0L75,0L75,20L30,20Z',
                             function (config) {
                                 return config.special_menu.currentState === 'hidden' && config.desktop.currentState !== 'dragging';
                             }),
@@ -87,7 +87,7 @@ config = {
                 image : new Image('file_menu.png', 2),
                 actions : {
                     select : {
-                        hotSpot : new Shape('M50,250L150,250L150,275L50,275Z',
+                        hotSpot : new Shape('M30,20L180,20L180,40L30,40Z',
                             function (config) {
                                 return config.desktop.currentState === 'empty_trash';
                             }),
@@ -123,7 +123,7 @@ config = {
                 image : no_image,
                 actions : {
                     click : {
-                        hotSpot : new Shape('M150,0L200,0L200,50L150,50Z',
+                        hotSpot : new Shape('M205,0L260,0L260,20L205,20Z',
                             function (config) {
                                 return config.file_menu.currentState === 'hidden' && config.desktop.currentState !== 'dragging';
                             }),
@@ -142,7 +142,7 @@ config = {
                 image : new Image('special_menu.png', 2),
                 actions : {
                     select : {
-                        hotSpot : new Shape('M150,250L250,250L250,275L150,275Z',
+                        hotSpot : new Shape('M205,35L340,35L340,55L205,55Z',
                             function (config) {
                                 return config.desktop.currentState === 'full_trash';
                             }),
@@ -173,7 +173,7 @@ config = {
                 image : new Image('dialog.png', 2),
                 actions : {
                     ok : {
-                        hotSpot : new Shape('M200,200L250,200L250,250L200,250Z'),
+                        hotSpot : new Shape('M365,130L435,130L435,165L365,165Z'),
                         events : {
                             click : function (event, config) {
                                 config.special_menu.currentState = 'hidden';
@@ -182,7 +182,7 @@ config = {
                         }
                     },
                     cancel : {
-                        hotSpot : new Shape('M150,200L200,200L200,250L150,250Z'),
+                        hotSpot : new Shape('M295,130L360,130L360,165L295,165Z'),
                         events : {
                             click : function (event, config) {
                                 config.special_menu.currentState = 'hidden';

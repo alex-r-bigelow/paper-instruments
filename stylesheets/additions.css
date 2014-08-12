@@ -23,7 +23,7 @@ svg#hotSpots {
 }
 svg#hotSpots path {
     fill: #55bada;
-    fill-opacity: 0.1;
+    fill-opacity: 0.5;
     stroke : none;
 }
 svg#hotSpots.hidden path {
@@ -41,7 +41,7 @@ svg#hotSpots circle {
 svg#graph {
     position:absolute;
     left:0px;
-    top:480px;
+    top:343px;
     z-index:2;
 }
 svg#graph marker path {
@@ -70,7 +70,7 @@ svg#graph circle.active {
 
 svg#heatMap {
     position: absolute;
-    left: 480px;
-    top:480px;
+    left: 512px;
+    top:343px;
     z-index:2;
 }

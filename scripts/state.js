@@ -250,6 +250,11 @@ function updateAll() {
         .attr("style", function (i) { return "z-index:"+i.zIndex; });
     
     // Update the hotSpots
+    
+    // I think d3 is reusing DOM elements with jQuery events
+    // still attached, so I manually clear the hotspots first:
+    document.getElementById("hotSpots").innerHTML = "";
+    
     var previewHotSpots = d3.select("#hotSpots")
         .selectAll("path")
         .data(actions);
@@ -263,9 +268,11 @@ function updateAll() {
             for (eventString in d.events) {
                 if (d.events.hasOwnProperty(eventString)) {
                     jQuery('#HotSpot' + d.hotSpot.hash).on(eventString, function (event) {
-                            d.events[eventString](event, config);
-                            updateAll();
-                        }); // jshint ignore:line
+                        event.preventDefault();
+                        d.events[eventString](event, config);
+                        updateAll();
+                        return true;
+                    }); // jshint ignore:line
                 }
             }
         });
@@ -379,3 +386,13 @@ function initGraph() {
     });
 }
 initGraph();
+
+// Visualize the process matrix:
+
+function initMatrix() {
+    // TODO: create the data by traversing the graph;
+    // here I'm just putting it in manually for
+    // a proof-of-concept
+    var matrix;
+}
+initMatrix();
