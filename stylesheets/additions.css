@@ -17,19 +17,20 @@ svg#hotSpots {
     z-index: 1;
 }
 svg#hotSpots path {
-    fill: #55bada;
-    fill-opacity: 0.2;
-    stroke : none;
-}
-svg#hotSpots.hidden path {
+    fill: #66c2a5;
+    stroke: #66c2a5;
     fill-opacity: 0.001;
+    stroke-width : 0px;
+}
+svg#hotSpots path.mask {
+    fill: #fc8d62;
+    stroke: #fc8d62;
 }
 svg#hotSpots path.selected {
-    stroke : #55bada;
     stroke-width : 3px;
 }
 svg#hotSpots circle {
-    fill: #55bada;
+    fill: #8da0cb;
 }
 
 div#configPanel {

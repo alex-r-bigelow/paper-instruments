@@ -90,7 +90,7 @@ config = {
                         hotSpot : new Shape('M30,20L180,20L180,40L30,40Z',
                             function (config) {
                                 return config.desktop.currentState === 'empty_trash';
-                            }),
+                            }, 2),
                         events : {
                             mouseup : function (event, config) {
                                 if (event === null || event.which === 1) {
@@ -112,7 +112,7 @@ config = {
                     }
                 },
                 masks : {
-                    menu : new Shape('M50,0L150,0L150,400L50,400Z')
+                    menu : new Shape('M30,0L180,0L180,280L30,280Z', true, 1)
                 }
             }
         }
@@ -145,7 +145,7 @@ config = {
                         hotSpot : new Shape('M205,35L340,35L340,55L205,55Z',
                             function (config) {
                                 return config.desktop.currentState === 'full_trash';
-                            }),
+                            }, 2),
                         events : {
                             mouseup : function (event, config) {
                                 if (event === null || event.which === 1) {
@@ -166,7 +166,7 @@ config = {
                     }
                 },
                 masks : {
-                    menu : new Shape('M150,0L250,0L250,400L150,400Z')
+                    menu : new Shape('M205,0L340,0L340,150L205,150Z', true, 1)
                 }
             },
             dialog : {
@@ -190,9 +190,7 @@ config = {
                         }
                     }
                 },
-                masks : {
-                    everywhere : new Shape('M0,0L500,0L500,500L0,500Z')
-                }
+                masks : {}
             }
         }
     }

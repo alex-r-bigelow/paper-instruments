@@ -46,28 +46,11 @@
 <body>
 	<div id="previewImages" width="512" height="343"></div>
 	<svg id="hotSpots" width="512" height="343"></svg>
-	<div id="configPanel" class="collapsed">
-		<div id="collapseBar">
-			<img src="images/expand.png"/>
-		</div>
-		<div id="configContents">
-			<label>State layers</label>
-			<img src="placeholders/stateDiagram.png"/>
-			<label>State permutations</label>
-			Color Edges By:
-			<select>
-				<option value="metaAction">Meta actions</option>
-				<option value="actionType">Action type</option>
-			</select>
-			<div id="graphContainer"></div>
-			<label>Abstract process heat map</label>
-			<img src="placeholders/processHeatmap.png"/>
-			<label>Specific process table</label>
-			<img src="placeholders/processTable.png"/>
-		</div>
-	</div>
 	
-	<script type="application/javascript" src="scripts/state.js"></script>
+	<script type="application/javascript">
+		hideHotSpots();
+		updatePreview();
+	</script>
 </body>
 
 </html>

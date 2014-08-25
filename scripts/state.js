@@ -1,4 +1,4 @@
-/* globals jQuery, d3, document, config, metaActions */
+/* globals jQuery, d3, document, config, metaActions, currentComboString, updatePreview, hideHotSpots */
 "use strict";
 
 // Create a graph, exploring all possible interaction pathways:
@@ -9,8 +9,7 @@ var graph = {
     },
     linkLookup = {},
     visited = {},
-    metaSeeds = {},
-    currentComboString = null;
+    metaSeeds = {};
 
 function constructGraph (config) {
     var tempConfig,
@@ -220,80 +219,13 @@ function updateAll() {
         temp.setAttribute("class", "node");
     }
     
-    // Now figure out the new currentComboString while collecting the relevant images and actions
-    currentComboString = "";
-    for (stateTree in config) {
-        if (config.hasOwnProperty(stateTree)) {
-            currentComboString += config[stateTree].currentState;
-            
-            state = config[stateTree].states[config[stateTree].currentState];
-            images.push(state.image);
-            for (action in state.actions) {
-                if (state.actions.hasOwnProperty(action)) {
-                    if (state.actions[action].hotSpot.isVisible(config) === true) {
-                        actions.push(state.actions[action]);
-                    }
-                }
-            }
-        }
-    }
-    
-    // Because SVG uses document order instead of z-index, we need to sort the actions
-    actions.sort(function (a, b) {
-        return a.hotSpot.zIndex - b.hotSpot.zIndex;
-    });
+    updatePreview(updateAll);
     
     // Highlight the relevant node in the graph
     temp = document.getElementById(currentComboString);
     if (temp !== null) {
         temp.setAttribute("class", "active node");
     }
-    
-    // Update the preview images
-    var previewImages = d3.select('#previewImages')
-        .selectAll("img")
-        .data(images);
-    
-    previewImages.enter().append("img");
-    
-    previewImages.attr("src", function (i) {
-                if (i.src !== '') {
-                    return 'data/' + i.src;
-                } else {
-                    return '';
-                }
-            })
-        .attr("style", function (i) { return "z-index:"+i.zIndex; });
-    
-    // Update the hotSpots
-    
-    // I think d3 is reusing DOM elements with jQuery events
-    // still attached, so I manually clear the hotspots first:
-    document.getElementById("hotSpots").innerHTML = "";
-    
-    var previewHotSpots = d3.select("#hotSpots")
-        .selectAll("path")
-        .data(actions);
-    
-    previewHotSpots.enter().append("path");
-    
-    previewHotSpots.attr("d", function (d) { return d.hotSpot.d; })
-        .attr("id", function (d) { return "HotSpot" + d.hotSpot.hash; })
-        .each(function (d) {
-            var eventString;
-            for (eventString in d.events) {
-                if (d.events.hasOwnProperty(eventString)) {
-                    jQuery('#HotSpot' + d.hotSpot.hash).on(eventString, function (event) {
-                        event.preventDefault();
-                        d.events[eventString](event, config);
-                        updateAll();
-                        return true;
-                    }); // jshint ignore:line
-                }
-            }
-        });
-    
-    previewHotSpots.exit().remove();
 }
 
 // Visualize the graph:
@@ -402,7 +334,7 @@ function initGraph() {
                     d.target.x + "," + 
                     d.target.y;
             });
-        
+            
             node.attr("transform", function(d) { 
                 return "translate(" + d.x + "," + d.y + ")";
             });
@@ -418,6 +350,7 @@ function initMatrix() {
     var matrix;
 }
 
+hideHotSpots();
 constructGraph(jQuery.extend(true, {}, config));
 flagMetas();
 updateAll();
