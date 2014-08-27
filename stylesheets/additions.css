@@ -23,8 +23,8 @@ svg#hotSpots path {
     stroke-width : 0px;
 }
 svg#hotSpots path.mask {
-    fill: #fc8d62;
-    stroke: #fc8d62;
+    fill: #b3b3b3;
+    stroke: #b3b3b3;
 }
 svg#hotSpots path.selected {
     stroke-width : 3px;

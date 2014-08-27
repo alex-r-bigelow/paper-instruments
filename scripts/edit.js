@@ -26,13 +26,17 @@ jQuery("#enableEdits").on("change", function (event) {
 });
 
 jQuery("#pathString").on("change", function (event) {
-    var s;
+    var s,
+	domShape,
+	classes;
     if (Shape.SELECTED !== null && Shape.SELECTED !== -1) {
 	s = Shape.ALL[Shape.SELECTED];
 	s.d = event.target.value;
 	s.setD(s.extractSegments());
 	s.initHandles();
-	jQuery("#HotSpot" + Shape.ALL[Shape.SELECTED].hash).attr({
+	domShape = jQuery("#HotSpot" + s.hash);
+	jQueryRemoveSvgClass(domShape, "selected");
+	domShape.attr({
 	    "d" : event.target.value
 	});
     }

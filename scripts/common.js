@@ -1,6 +1,33 @@
 /* globals jQuery, d3, getCSSRule, document, window */
 "use strict";
 
+// funcitons for adding / removing SVG classes:
+function jQueryAddSvgClass (queryObj, classname) {
+    var existingClasses = queryObj.attr('class');
+    if (existingClasses !== undefined) {
+        if (existingClasses.split(" ").indexOf(classname) === -1) {
+            queryObj.attr({
+                'class' : existingClasses + " " + classname
+            });
+        }
+    } else {
+        queryObj.attr({
+            "class" : classname
+        });
+    }
+}
+function jQueryRemoveSvgClass (queryObj, classname) {
+    var classes = queryObj.attr('class').split(" ");
+    classes.pop(classes.indexOf(classname));
+    if (classes.length === 0) {
+        queryObj.removeAttr('class');
+    } else {
+        queryObj.attr({
+            'class' : classes.join(" ")
+        });
+    }
+}
+
 // Classes used in previews
 
 function Image(src,z) {
@@ -246,11 +273,9 @@ Shape.prototype.initHandles = function () {
 };
 Shape.prototype.select = function (event) {
     var self = this,
-        domHandle,
         hash,
         origins = {},
-        newPos,
-        target,
+        domShape = jQuery("#HotSpot" + self.hash),
         move = function (event) {
             var hash;
             event.preventDefault();
@@ -274,10 +299,14 @@ Shape.prototype.select = function (event) {
                 return move(event);
         };
     
+    if (Shape.SELECTED !== null && Shape.SELECTED !== -1) {
+        jQueryRemoveSvgClass(jQuery("#HotSpot" + Shape.ALL[Shape.SELECTED].hash), "selected");
+    }
     Shape.SELECTED = self.hash;
     
-    // Create our handles
+    // Create our handles, border
     self.initHandles();
+    jQueryAddSvgClass(domShape, "selected");
     
     // Now drag the whole shape
     event.preventDefault();
@@ -397,17 +426,15 @@ function updatePreview(updateCallback) {
         .attr("id", function (d) { return "HotSpot" + d.hotSpot.hash; });
     
     if (Shape.SELECTED !== null) {
-        previewHotSpots.attr("class", function (d) {
-            if (d.isMask === true) {
-                return 'mask';
-            } else {
-                return "";
-            }})
-            .each(function (d) {
-                jQuery("#HotSpot" + d.hotSpot.hash).on('mousedown', function (event) {
-                    Shape.ALL[d.hotSpot.hash].select(event);
-                });
+        previewHotSpots.each(function (d) {
+            var h = jQuery("#HotSpot" + d.hotSpot.hash);
+            if (d.isMask) {
+                jQueryAddSvgClass(h, "mask");
+            }
+            h.on('mousedown', function (event) {
+                Shape.ALL[d.hotSpot.hash].select(event);
             });
+        });
     } else {
         previewHotSpots.each(function (d) {
             var eventString;
