@@ -1,4 +1,4 @@
-/* globals jQuery, d3, document, config, metaActions, currentComboString, updatePreview, hideHotSpots */
+/* globals jQuery, d3, document, metaStates, config, metaActions, currentComboString, updatePreview, hideHotSpots */
 "use strict";
 
 // Create a graph, exploring all possible interaction pathways:
@@ -9,10 +9,31 @@ var graph = {
     },
     linkLookup = {},
     visited = {},
-    metaSeeds = {};
+    metaSeeds = {},
+    allMetaStates = {},
+    allActionTypes = [],
+    metaStateColors = [ '#1f77b4',  // d3.scale.category20, but parsed
+                        '#ff7f0e',  // so that states are only
+                        '#2ca02c',  // encoded with saturated colors,
+                        '#d62728',  // and actions are only encoded with
+                        '#9467bd',  // desaturated ones. Also rotated
+                        '#8c564b',  // so that hues are less likely to be
+                        '#e377c2',  // repeated between the two
+                        '#bcbd22',
+                        '#17becf'],
+    metaActionColors = ['#c49c94',
+                        '#f7b6d2',
+                        '#dbdb8d',
+                        '#9edae5',
+                        '#aec7e8',
+                        '#ffbb78',
+                        '#98df8a',
+                        '#ff9896',
+                        '#c5b0d5'];
 
-function constructGraph (config) {
+function constructGraph (config, metaStates) {
     var tempConfig,
+        tempMetaStates,
         stateTree,
         stateString,
         comboString = "",
@@ -44,8 +65,21 @@ function constructGraph (config) {
         graph.nodes.push({
                 comboString : comboString,
                 states : currentStates,
-                stateStrings : currentStateStrings
+                stateStrings : currentStateStrings,
+                metaStates : {}
             });
+        
+        // ... copy our current meta states
+        for (entity in metaStates) {
+            if (metaStates.hasOwnProperty(entity)) {
+                graph.nodes[graph.nodes.length - 1].metaStates[entity] = metaStates[entity];
+                // collect all possible meta states
+                if (allMetaStates.hasOwnProperty(entity) === false) {
+                    allMetaStates[entity] = {};
+                }
+                allMetaStates[entity][metaStates[entity]] = true;
+            }
+        }
         
         // ... recurse for all the possible next states
         for (stateTree in currentStates) {
@@ -55,6 +89,9 @@ function constructGraph (config) {
                     if (actions.hasOwnProperty(actionString)) {
                         // Don't follow actions if their hotSpots aren't even visible
                         if (actions[actionString].hotSpot.isVisible(config) === true) {
+                            // Collect all possible action types
+                            allActionTypes[actions[actionString].actionType] = true;
+                            
                             // Are we potentially starting a meta action?
                             for (entity in metaActions) {
                                 if (metaActions.hasOwnProperty(entity)) {
@@ -70,7 +107,10 @@ function constructGraph (config) {
                                                     if (metaSeeds[entity].hasOwnProperty(meta) === false) {
                                                         metaSeeds[entity][meta] = [];
                                                     }
-                                                    metaSeeds[entity][meta].push(config);
+                                                    metaSeeds[entity][meta].push({
+                                                        config : config,
+                                                        metaStates : metaStates
+                                                    });
                                                 }
                                             }
                                         }
@@ -81,15 +121,16 @@ function constructGraph (config) {
                             events = actions[actionString].events;
                             for (eventString in events) {
                                 if (events.hasOwnProperty(eventString)) {
-                                    // deep clone config; this allows effect functions
+                                    // deep clone config and metaStates; this allows effect functions
                                     // to do anything they want to the config object
                                     tempConfig = jQuery.extend(true, {}, config);
+                                    tempMetaStates = jQuery.extend(true, {}, metaStates);
                                     
-                                    // apply the event to our clone (with a null event object)
-                                    events[eventString](null, tempConfig);
+                                    // apply the event to our clone and metaStates (with a null event object)
+                                    events[eventString](null, tempConfig, tempMetaStates);
                                     
                                     // recurse
-                                    targetComboString = constructGraph(tempConfig);
+                                    targetComboString = constructGraph(tempConfig, tempMetaStates);
                                     
                                     // don't create self-edges in the graph
                                     if (targetComboString !== comboString) {
@@ -97,7 +138,8 @@ function constructGraph (config) {
                                         graph.links.push({
                                             source : visited[comboString],
                                             target : visited[targetComboString],
-                                            metaActions : []
+                                            metaActions : {},
+                                            actionType : actions[actionString].actionType
                                         });
                                         linkLookup[comboString + "->" + targetComboString] = graph.links[graph.links.length - 1];
                                     }
@@ -114,10 +156,11 @@ function constructGraph (config) {
 }
 
 // Flag the links that are part of a metaAction
-function flagMetas() {
-    var meta,
+function flagMetaActions() {
+    var metaAction,
         entity,
         tempConfig,
+        tempMetaStates,
         i,
         j,
         k,
@@ -132,25 +175,27 @@ function flagMetas() {
     // loop through potential starting locations
     for (entity in metaSeeds){
         if (metaSeeds.hasOwnProperty(entity)) {
-            for (meta in metaSeeds[entity]) {
-                if (metaSeeds[entity].hasOwnProperty(meta)) {
-                    for (i = 0; i < metaSeeds[entity][meta].length; i += 1) {
+            for (metaAction in metaSeeds[entity]) {
+                if (metaSeeds[entity].hasOwnProperty(metaAction)) {
+                    for (i = 0; i < metaSeeds[entity][metaAction].length; i += 1) {
                         linksToFlag = [];
                         success = true;
-                        tempConfig = metaSeeds[entity][meta][i];
+                        tempConfig = metaSeeds[entity][metaAction][i].config;
+                        tempMetaStates = metaSeeds[entity][metaAction][i].metaStates;
                         // loop through the potential steps TODO: may be a bug here if there's more than one sequence...
-                        for (j = 0; j < metaActions[entity][meta].length; j += 1) {
-                            for (k = 0; k < metaActions[entity][meta][j].length; k += 1) {
-                                state = tempConfig[metaActions[entity][meta][j][k].stateTree].currentState;
+                        for (j = 0; j < metaActions[entity][metaAction].length; j += 1) {
+                            for (k = 0; k < metaActions[entity][metaAction][j].length; k += 1) {
+                                state = tempConfig[metaActions[entity][metaAction][j][k].stateTree].currentState;
                                 
                                 // It's possible that we're not even in the right state to perform
                                 // this step...
-                                if (state !== metaActions[entity][meta][j][k].state) {
+                                if (state !== metaActions[entity][metaAction][j][k].state) {
                                     success = false;
                                     break;
                                 }
                                 
-                                action = tempConfig[metaActions[entity][meta][j][k].stateTree].states[state].actions[metaActions[entity][meta][j][k].action];
+                                action = tempConfig[metaActions[entity][metaAction][j][k].stateTree]
+                                    .states[state].actions[metaActions[entity][metaAction][j][k].action];
                                 
                                 // if we can't see the hotSpot, the chain is broken;
                                 // there's no way to perform the next action in the meta action
@@ -169,7 +214,7 @@ function flagMetas() {
                                     // side effects)
                                     for (temp in action.events) {
                                         if (action.events.hasOwnProperty(temp)) {
-                                            action.events[temp](null, tempConfig);
+                                            action.events[temp](null, tempConfig, tempMetaStates);
                                             break;
                                         }
                                     }
@@ -191,9 +236,10 @@ function flagMetas() {
                             // to the meta action
                             for (j = 0; j < linksToFlag.length; j += 1) {
                                 temp = linkLookup[linksToFlag[j]].metaActions;
-                                if (temp.indexOf(meta) === -1) {
-                                    temp.push(meta);
+                                if (temp.hasOwnProperty(entity) === false) {
+                                    temp[entity] = {};
                                 }
+                                temp[entity][metaAction] = true;
                             }
                         }
                     }
@@ -248,7 +294,10 @@ function initGraph() {
         width,
         height,
         style,
-        svg;
+        svg,
+        colorScheme = jQuery('#graphColorScheme').val(),
+        entity = jQuery('#graphEntities').val(),
+        colors;
     
     if (bounds.width === 0) {
         return;
@@ -266,49 +315,95 @@ function initGraph() {
         .attr("width", width)
         .attr("height", height);
     
-    // Add the arrow template
-    svg.append("svg:defs").selectAll("marker")
-        .data(["end"])      // Different link/path types can be defined here
-        .enter().append("svg:marker")    // This section adds in the arrows
-        .attr("id", String)
-        .attr("viewBox", "0 -5 10 10")
-        .attr("refX", 15)
-        .attr("refY", -1.5)
-        .attr("markerWidth", 6)
-        .attr("markerHeight", 6)
-        .attr("orient", "auto")
-        .append("svg:path")
-        .attr("d", "M0,-5L10,0L0,5");
+    // Add the edges and nodes groups
+    svg.append("svg:g").attr("id","edges");
+    svg.append("svg:g").attr("id","nodes");
     
     // Start the layout algorithm
     var force = d3.layout.force()
         .charge(-480)
-        .linkDistance(120)
+        .linkDistance(60)
         .size([width, height])
         .nodes(graph.nodes)
         .links(graph.links)
         .start();
     
+    // Set up our color scheme, and draw our legend
+    if (colorScheme === 'actionType') {
+        colors = d3.scale.category10();
+    } else {
+        var state,
+            action,
+            domain = ['No Meta Action','No State'],
+            range = ['#c7c7c7','#7f7f7f'],
+            i = 0;
+        for (state in allMetaStates[entity]) {
+            if (allMetaStates[entity].hasOwnProperty(state)) {
+                domain.push(state);
+                range.push(metaStateColors[i]);
+                i += 1;
+                if (i >= metaStateColors.length) {
+                    i = 0;
+                }
+            }
+        }
+        i = 0;
+        for (action in metaActions[entity]) {
+            if (metaActions[entity].hasOwnProperty(action)) {
+                domain.push(action);
+                range.push(metaActionColors[i]);
+                i += 1;
+                if (i >= metaActionColors.length) {
+                    i = 0;
+                }
+            }
+        }
+        colors = d3.scale.ordinal(10).domain(domain).range(range);
+    }
+    
     // Add the links and arrows
-    var path = svg.append("svg:g").selectAll("path")
-        .data(force.links())
-        .enter().append("svg:path")
+    var path = svg.select("#edges").selectAll("path")
+        .data(force.links());
+    
+    path.enter().append("svg:path")
         .attr("class", function (d) {
             var result = "link";
             if (d.metaActions.length > 0) {
                 result += " " + d.metaActions.join(" ");
             }
             return result;
-        })
-        .attr("marker-end", "url(#end)");
-    
+        });
+    path.attr("fill", function (d) {
+        if (colorScheme === 'actionType') {
+            return colors(d.actionType);
+        } else {
+            var metaAction;
+            for (metaAction in d.metaActions[entity]) {
+                if (d.metaActions[entity].hasOwnProperty(metaAction)) {
+                    return colors(metaAction);
+                    // TODO: what if an action is part of more than one metaAction arc for an entity?
+                }
+            }
+            return colors('No Meta Action');
+        }
+    });
+        
     // Add the nodes
-    var node = svg.selectAll(".node")
+    var nodeRadius = 5;
+    
+    var node = svg.select("#nodes").selectAll("circle")
         .data(graph.nodes);
     
     node.enter().append("circle")
         .attr("id", function (d) { return d.comboString; })
-        .attr("r", 5)
+        .attr("r", nodeRadius)
+        .attr("fill", function (d) {
+            if (colorScheme === 'actionType' || d.metaStates.hasOwnProperty(entity) === false) {
+                return colors('No State');
+            } else {
+                return colors(d.metaStates[entity]);
+            }
+        })
         .on('dblclick', clickNode)
         .call(force.drag);
     
@@ -323,16 +418,56 @@ function initGraph() {
     // Update with the algorithm
     force.on("tick",
         function () {
+            // draw curvy, pointy arc
             path.attr("d", function(d) {
                 var dx = d.target.x - d.source.x,
                     dy = d.target.y - d.source.y,
-                    dr = Math.sqrt(dx * dx + dy * dy);
+                    arcRadius = 10 * dx / Math.abs(dx),
+                    theta,
+                    edgePoint,
+                    front,
+                    back,
+                    arc;
+                if (dx === 0) {
+                    if (dy >= 0) {
+                        theta = Math.PI;
+                    } else {
+                        theta = -Math.PI;
+                    }
+                    edgePoint = {
+                        x : 0,
+                        y : nodeRadius
+                    };
+                } else {
+                    theta = Math.atan((d.target.y - d.source.y)/(d.target.x - d.source.x)) + Math.PI / 2;
+                    edgePoint = {
+                        x : nodeRadius * Math.cos(theta),
+                        y : nodeRadius * Math.sin(theta)
+                    };
+                }
+                front = {
+                    x : d.source.x + edgePoint.x,
+                    y : d.source.y + edgePoint.y
+                };
+                back = {
+                    x : d.source.x - edgePoint.x,
+                    y : d.source.y - edgePoint.y
+                };
+                arc = {
+                    x : (d.source.x + d.target.x) / 2 + arcRadius * Math.cos(theta),
+                    y : (d.source.y + d.target.y) / 2 + arcRadius * Math.sin(theta)
+                };
                 return "M" + 
-                    d.source.x + "," + 
-                    d.source.y + "A" + 
-                    dr + "," + dr + " 0 0,1 " + 
+                    front.x + "," + 
+                    front.y + "Q" + 
+                    arc.x + "," +
+                    arc.y + "," +
                     d.target.x + "," + 
-                    d.target.y;
+                    d.target.y + "Q" +
+                    arc.x + "," +
+                    arc.y + "," +
+                    back.x + "," +
+                    back.y + "Z";
             });
             
             node.attr("transform", function(d) { 
@@ -350,24 +485,48 @@ function initMatrix() {
     var matrix;
 }
 
+function initGui() {
+    // Handle collapsing / expanding the config panel
+    jQuery("#collapseBar").on("click", function (event) {
+        var panel = jQuery("#configPanel"),
+            collapsed = panel.attr('class');
+        if (typeof collapsed !== typeof undefined && collapsed !== false) {
+            panel.removeAttr('class');
+            jQuery("#collapseBar img").attr("src", "images/collapse.png");
+        } else {
+            panel.attr("class", "collapsed");
+            jQuery("#collapseBar img").attr("src", "images/expand.png");
+        }
+        initGraph();
+        initMatrix();
+    });
+    
+    // Populate the graph entity menu
+    var menu = jQuery("#graphEntities"),
+        entity;
+    for (entity in metaActions) {
+        if (metaActions.hasOwnProperty(entity)) {
+            menu.append(jQuery('<option value="' + entity + '">' + entity + '</option>'));
+        }
+    }
+    
+    // Update the graph when selects are changed
+    jQuery("#graphColorScheme").on('change', function (event) {
+        if (event.target.value === 'actionType') {
+            menu.prop('disabled','disabled');
+        } else {
+            menu.prop('disabled', false);
+        }
+    });
+    menu.on('change', function(event) {
+        initGraph();
+    });
+}
+
 hideHotSpots();
-constructGraph(jQuery.extend(true, {}, config));
-flagMetas();
+constructGraph(jQuery.extend(true, {}, config), jQuery.extend(true, {}, metaStates));
+flagMetaActions();
 updateAll();
 initGraph();
 initMatrix();
-
-// Handle collapsing / expanding the config panel
-jQuery("#collapseBar").on("click", function (event) {
-    var panel = jQuery("#configPanel"),
-        collapsed = panel.attr('class');
-    if (typeof collapsed !== typeof undefined && collapsed !== false) {
-        panel.removeAttr('class');
-        jQuery("#collapseBar img").attr("src", "images/collapse.png");
-    } else {
-        panel.attr("class", "collapsed");
-        jQuery("#collapseBar img").attr("src", "images/expand.png");
-    }
-    initGraph();
-    initMatrix();
-});
+initGui();

@@ -1,5 +1,9 @@
-/* globals Image, Shape, empty_space, no_image, MetaActionStep, config:true, metaActions:true */
+/* globals Image, Shape, empty_space, no_image, MetaActionStep, metaStates:true, config:true, metaActions:true */
 "use strict";
+
+metaStates = {
+    folder : "Doesn't Exist"
+};
 
 config = {
     desktop : {
@@ -19,12 +23,13 @@ config = {
                                 return config.file_menu.currentState === 'hidden' && config.special_menu.currentState === 'hidden';
                             }),
                         events : {
-                            mousedown : function (event, config) {
+                            mousedown : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
                                     config.desktop.currentState = 'dragging';
                                 }
                             }
-                        }
+                        },
+                        actionType : "Direct Manipulation"
                     }
                 },
                 masks : {}
@@ -35,22 +40,25 @@ config = {
                     elsewhere : {
                         hotSpot : empty_space,
                         events : {
-                            mouseup : function (event, config) {
+                            mouseup : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
                                     config.desktop.currentState = 'untitled_folder';
                                 }
                             }
-                        }
+                        },
+                        actionType : "Direct Manipulation"
                     },
                     trash : {
                         hotSpot : new Shape('M450,285L495,285L495,340L450,340Z'),
                         events : {
-                            mouseup : function (event, config) {
+                            mouseup : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
                                     config.desktop.currentState = 'full_trash';
+                                    metaStates.folder = 'In trash';
                                 }
                             }
-                        }
+                        },
+                        actionType : "Direct Manipulation"
                     }
                 },
                 masks : {}
@@ -73,12 +81,13 @@ config = {
                                 return config.special_menu.currentState === 'hidden' && config.desktop.currentState !== 'dragging';
                             }),
                         events : {
-                            mousedown : function (event, config) {
+                            mousedown : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
                                     config.file_menu.currentState = 'showing';
                                 }
                             }
-                        }
+                        },
+                        actionType : "GUI"
                     }
                 },
                 masks : {}
@@ -92,23 +101,26 @@ config = {
                                 return config.desktop.currentState === 'empty_trash';
                             }, 2),
                         events : {
-                            mouseup : function (event, config) {
+                            mouseup : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
                                     config.file_menu.currentState = 'hidden';
                                     config.desktop.currentState = 'untitled_folder';
+                                    metaStates.folder = "On Desktop";
                                 }
                             }
-                        }
+                        },
+                        actionType : "GUI"
                     },
                     release : {
                         hotSpot : empty_space,
                         events : {
-                            mouseup : function (event, config) {
+                            mouseup : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
                                     config.file_menu.currentState = 'hidden';
                                 }
                             }
-                        }
+                        },
+                        actionType : "GUI"
                     }
                 },
                 masks : {
@@ -128,12 +140,13 @@ config = {
                                 return config.file_menu.currentState === 'hidden' && config.desktop.currentState !== 'dragging';
                             }),
                         events : {
-                            mousedown : function (event, config) {
+                            mousedown : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
                                     config.special_menu.currentState = 'showing';
                                 }
                             }
-                        }
+                        },
+                        actionType : "GUI"
                     }
                 },
                 masks : {}
@@ -147,22 +160,24 @@ config = {
                                 return config.desktop.currentState === 'full_trash';
                             }, 2),
                         events : {
-                            mouseup : function (event, config) {
+                            mouseup : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
                                     config.special_menu.currentState = 'dialog';
                                 }
                             }
-                        }
+                        },
+                        actionType : "GUI"
                     },
                     release : {
                         hotSpot : empty_space,
                         events : {
-                            mouseup : function (event, config) {
+                            mouseup : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
                                     config.special_menu.currentState = 'hidden';
                                 }
                             }
-                        }
+                        },
+                        actionType : "GUI"
                     }
                 },
                 masks : {
@@ -175,19 +190,22 @@ config = {
                     ok : {
                         hotSpot : new Shape('M365,130L435,130L435,165L365,165Z'),
                         events : {
-                            click : function (event, config) {
+                            click : function (event, config, metaStates) {
                                 config.special_menu.currentState = 'hidden';
                                 config.desktop.currentState = 'empty_trash';
+                                metaStates.folder = "Doesn't Exist";
                             }
-                        }
+                        },
+                        actionType : "GUI"
                     },
                     cancel : {
                         hotSpot : new Shape('M295,130L360,130L360,165L295,165Z'),
                         events : {
-                            click : function (event, config) {
+                            click : function (event, config, metaStates) {
                                 config.special_menu.currentState = 'hidden';
                             }
-                        }
+                        },
+                        actionType : "GUI"
                     }
                 },
                 masks : {}

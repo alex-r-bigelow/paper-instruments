@@ -345,6 +345,7 @@ function MetaActionStep(stateTree, state, action, actionType) {
 
 var no_image = new Image('',1),
     empty_space = new Shape('M0,0L512,0L512,343L0,343Z',true,0), // TODO: figure this out automatically
+    metaStates,
     config,
     metaActions,
     currentComboString = null;
@@ -442,7 +443,7 @@ function updatePreview(updateCallback) {
                 if (d.events.hasOwnProperty(eventString)) {
                     jQuery('#HotSpot' + d.hotSpot.hash).on(eventString, function (event) {
                         event.preventDefault();
-                        d.events[eventString](event, config);
+                        d.events[eventString](event, config, metaStates);
                         updateCallback();
                         return true;
                     }); // jshint ignore:line
@@ -468,4 +469,4 @@ function hideHotSpots () {
     });
 }
 
-// config.js gets loaded next
+// config.js gets loaded next...
