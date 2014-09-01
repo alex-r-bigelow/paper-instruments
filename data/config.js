@@ -1,4 +1,4 @@
-/* globals Image, Shape, empty_space, no_image, MetaActionStep, metaStates:true, config:true, metaActions:true */
+/* globals Slide, Shape, no_image, MetaActionStep, metaStates:true, config:true, metaActions:true */
 "use strict";
 
 metaStates = {
@@ -9,12 +9,12 @@ config = {
     desktop : {
         states : {
             empty_trash : {
-                image : new Image('empty_trash.png'),
+                image : new Slide('empty_trash.png'),
                 actions : {},
                 masks : {}
             },
             untitled_folder : {
-                image : new Image('untitled_folder.png'),
+                image : new Slide('untitled_folder.png'),
                 actions : {
                     drag : {
                         hotSpot : new Shape(
@@ -35,10 +35,10 @@ config = {
                 masks : {}
             },
             dragging : {
-                image : new Image('dragging.png'),
+                image : new Slide('dragging.png'),
                 actions : {
                     elsewhere : {
-                        hotSpot : empty_space,
+                        hotSpot : new Shape(null, true, 0),
                         events : {
                             mouseup : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
@@ -64,7 +64,7 @@ config = {
                 masks : {}
             },
             full_trash : {
-                image : new Image('full_trash.png'),
+                image : new Slide('full_trash.png'),
                 actions : {},
                 masks : {}
             }
@@ -93,7 +93,7 @@ config = {
                 masks : {}
             },
             showing : {
-                image : new Image('file_menu.png', 2),
+                image : new Slide('file_menu.png', 2),
                 actions : {
                     select : {
                         hotSpot : new Shape('M30,20L180,20L180,40L30,40Z',
@@ -112,7 +112,7 @@ config = {
                         actionType : "GUI"
                     },
                     release : {
-                        hotSpot : empty_space,
+                        hotSpot : new Shape(null, true, 0),
                         events : {
                             mouseup : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
@@ -152,7 +152,7 @@ config = {
                 masks : {}
             },
             showing : {
-                image : new Image('special_menu.png', 2),
+                image : new Slide('special_menu.png', 2),
                 actions : {
                     select : {
                         hotSpot : new Shape('M205,35L340,35L340,55L205,55Z',
@@ -169,7 +169,7 @@ config = {
                         actionType : "GUI"
                     },
                     release : {
-                        hotSpot : empty_space,
+                        hotSpot : new Shape(null, true, 0),
                         events : {
                             mouseup : function (event, config, metaStates) {
                                 if (event === null || event.which === 1) {
@@ -185,7 +185,7 @@ config = {
                 }
             },
             dialog : {
-                image : new Image('dialog.png', 2),
+                image : new Slide('dialog.png', 2),
                 actions : {
                     ok : {
                         hotSpot : new Shape('M365,130L435,130L435,165L365,165Z'),

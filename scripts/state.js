@@ -1,4 +1,4 @@
-/* globals jQuery, d3, document, metaStates, config, metaActions, currentComboString, updatePreview, hideHotSpots */
+/* globals jQuery, d3, document, metaStates, config, metaActions, currentComboString, loadImages, updatePreview, hideHotSpots */
 "use strict";
 
 // Create a graph, exploring all possible interaction pathways:
@@ -11,7 +11,7 @@ var graph = {
     visited = {},
     metaSeeds = {},
     allMetaStates = {},
-    allActionTypes = [],
+    allActionTypes = {},
     metaStateColors = [ '#1f77b4',  // d3.scale.category20, but parsed
                         '#ff7f0e',  // so that states are only
                         '#2ca02c',  // encoded with saturated colors,
@@ -53,6 +53,9 @@ function constructGraph (config, metaStates) {
         if (config.hasOwnProperty(stateTree)) {
             stateString = config[stateTree].currentState;
             currentStateStrings[stateTree] = stateString;
+            if (config[stateTree].states.hasOwnProperty(stateString) === false) {
+                throw "Set tree '" + stateTree + "' to nonexistent state '" + stateString + "'";
+            }
             currentStates[stateTree] = config[stateTree].states[stateString];
             comboString += stateString;
         }
@@ -288,16 +291,148 @@ function clickNode (d) {
     updateAll();
 }
 
+function updateGraphColors () {
+    var colorScheme = jQuery('#graphColorScheme').val(),
+        entity = jQuery('#graphEntities').val(),
+        legendHeight = jQuery('#graphLegend').height() - 20,    // -20 for scroll bar
+        offset,
+        colors,
+        path = d3.select("#edges").selectAll("path"),
+        node = d3.select("#nodes").selectAll("circle"),
+        edgeLegend = [],
+        nodeLegend = [],
+        legendScale;
+    // Set up our color scheme, and draw our legend
+    if (colorScheme === 'actionType') {
+        colors = d3.scale.category10();
+        // Prep 'No State' as grey (the others are dummy values)
+        colors.domain(['a','b','c','d','e','f','g','No State']);
+        edgeLegend = Object.keys(allActionTypes);
+        legendScale = d3.scale.ordinal().domain(edgeLegend).rangePoints([0,legendHeight],1);
+    } else {
+        var state,
+            action,
+            domain = ['No Meta Action','No State'],
+            range = ['#c7c7c7','#7f7f7f'],
+            i = 0;
+        for (state in allMetaStates[entity]) {
+            if (allMetaStates[entity].hasOwnProperty(state)) {
+                domain.push(state);
+                nodeLegend.push(state);
+                range.push(metaStateColors[i]);
+                i += 1;
+                if (i >= metaStateColors.length) {
+                    i = 0;
+                }
+            }
+        }
+        i = 0;
+        for (action in metaActions[entity]) {
+            if (metaActions[entity].hasOwnProperty(action)) {
+                domain.push(action);
+                edgeLegend.push(action);
+                range.push(metaActionColors[i]);
+                i += 1;
+                if (i >= metaActionColors.length) {
+                    i = 0;
+                }
+            }
+        }
+        legendScale = d3.scale.ordinal().domain(edgeLegend.concat(nodeLegend)).rangePoints([0,legendHeight],1);
+        colors = d3.scale.ordinal(10).domain(domain).range(range);
+    }
+    
+    // Apply the colors
+    path.attr("fill", function (d) {
+        if (colorScheme === 'actionType') {
+            return colors(d.actionType);
+        } else {
+            var metaAction;
+            for (metaAction in d.metaActions[entity]) {
+                if (d.metaActions[entity].hasOwnProperty(metaAction)) {
+                    return colors(metaAction);
+                    // TODO: what if an action is part of more than one metaAction arc for an entity?
+                }
+            }
+            return colors('No Meta Action');
+        }
+    });
+    node.attr("fill", function (d) {
+        if (colorScheme === 'actionType' || d.metaStates.hasOwnProperty(entity) === false) {
+            return colors('No State');
+        } else {
+            return colors(d.metaStates[entity]);
+        }
+    });
+    
+    // Redraw the legend
+    document.getElementById('graphLegend').innerHTML = "";
+    
+    var svg = d3.select("#graphLegend").append("svg")
+        .attr("height", legendHeight)
+        .selectAll("g");
+    var edges = svg.data(edgeLegend),
+        nodes = svg.data(nodeLegend);
+        
+    var oneEdgeGroup = edges.enter()
+        .append("g");
+        
+    oneEdgeGroup.append("path")
+        .attr("d" , function (d) {
+            offset = legendScale(d);
+            return 'M6.33301113330128,' + (10.00666937243196 + offset) +
+                   'Q32.21052497327895,' + (14.41824348294756 + offset) +
+                   ',57.74629172573322,' + (3.83371113451292 + offset) +
+                   'Q32.21052497327895,' + (14.41824348294756 + offset) +
+                   ',6.105179741619,' + (0.00926506646513 + offset) + 'Z';
+        })
+        .attr("fill", function (d) {
+            return colors(d);
+        });
+    oneEdgeGroup.append("text")
+        .attr("x", 60)
+        .attr("y", function (d) {
+            return legendScale(d) + 12;
+        })
+        .text(function (d) {
+            return d;
+        })
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "12px")
+        .attr("fill", "black");
+    
+    var oneNodeGroup = nodes.enter()
+        .append("g");
+    
+    oneNodeGroup.append("circle")
+        .attr("cx", 10)
+        .attr("cy", function (d) {
+            return legendScale(d) + 8;
+        })
+        .attr("r",5)
+        .attr("fill", function (d) {
+            return colors(d);
+        });
+    oneNodeGroup.append("text")
+        .attr("x", 25)
+        .attr("y", function (d) {
+            return legendScale(d) + 12;
+        })
+        .text(function (d) {
+            return d;
+        })
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "12px")
+        .attr("fill", "black");
+}
+
 function initGraph() {
     // Set up the graph svg element
     var bounds = document.getElementById("configContents").getBoundingClientRect(),
         width,
         height,
         style,
-        svg,
-        colorScheme = jQuery('#graphColorScheme').val(),
-        entity = jQuery('#graphEntities').val(),
-        colors;
+        svg;
     
     if (bounds.width === 0) {
         return;
@@ -306,7 +441,7 @@ function initGraph() {
     // I'm guessing with current styling, etc, we need 50px per node?
     width = graph.nodes.length * 50;
     height = graph.nodes.length * 50;
-    svg = d3.select("#graphContainer")
+    svg = d3.select("#graphRegion")
         .selectAll("svg.graph")
         .data(["graph"])
         .enter().append("svg")
@@ -328,39 +463,6 @@ function initGraph() {
         .links(graph.links)
         .start();
     
-    // Set up our color scheme, and draw our legend
-    if (colorScheme === 'actionType') {
-        colors = d3.scale.category10();
-    } else {
-        var state,
-            action,
-            domain = ['No Meta Action','No State'],
-            range = ['#c7c7c7','#7f7f7f'],
-            i = 0;
-        for (state in allMetaStates[entity]) {
-            if (allMetaStates[entity].hasOwnProperty(state)) {
-                domain.push(state);
-                range.push(metaStateColors[i]);
-                i += 1;
-                if (i >= metaStateColors.length) {
-                    i = 0;
-                }
-            }
-        }
-        i = 0;
-        for (action in metaActions[entity]) {
-            if (metaActions[entity].hasOwnProperty(action)) {
-                domain.push(action);
-                range.push(metaActionColors[i]);
-                i += 1;
-                if (i >= metaActionColors.length) {
-                    i = 0;
-                }
-            }
-        }
-        colors = d3.scale.ordinal(10).domain(domain).range(range);
-    }
-    
     // Add the links and arrows
     var path = svg.select("#edges").selectAll("path")
         .data(force.links());
@@ -373,20 +475,6 @@ function initGraph() {
             }
             return result;
         });
-    path.attr("fill", function (d) {
-        if (colorScheme === 'actionType') {
-            return colors(d.actionType);
-        } else {
-            var metaAction;
-            for (metaAction in d.metaActions[entity]) {
-                if (d.metaActions[entity].hasOwnProperty(metaAction)) {
-                    return colors(metaAction);
-                    // TODO: what if an action is part of more than one metaAction arc for an entity?
-                }
-            }
-            return colors('No Meta Action');
-        }
-    });
         
     // Add the nodes
     var nodeRadius = 5;
@@ -397,13 +485,6 @@ function initGraph() {
     node.enter().append("circle")
         .attr("id", function (d) { return d.comboString; })
         .attr("r", nodeRadius)
-        .attr("fill", function (d) {
-            if (colorScheme === 'actionType' || d.metaStates.hasOwnProperty(entity) === false) {
-                return colors('No State');
-            } else {
-                return colors(d.metaStates[entity]);
-            }
-        })
         .on('dblclick', clickNode)
         .call(force.drag);
     
@@ -414,6 +495,8 @@ function initGraph() {
             return "node";
         }
     });
+    
+    updateGraphColors();
     
     // Update with the algorithm
     force.on("tick",
@@ -517,12 +600,14 @@ function initGui() {
         } else {
             menu.prop('disabled', false);
         }
+        updateGraphColors();
     });
     menu.on('change', function(event) {
-        initGraph();
+        updateGraphColors();
     });
 }
 
+loadImages();
 hideHotSpots();
 constructGraph(jQuery.extend(true, {}, config), jQuery.extend(true, {}, metaStates));
 flagMetaActions();

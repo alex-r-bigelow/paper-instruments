@@ -1,4 +1,4 @@
-/* globals jQuery, d3, getCSSRule, document, window */
+/* globals jQuery, d3, Image, getCSSRule, document, window */
 "use strict";
 
 // funcitons for adding / removing SVG classes:
@@ -30,7 +30,7 @@ function jQueryRemoveSvgClass (queryObj, classname) {
 
 // Classes used in previews
 
-function Image(src,z) {
+function Slide(src,z) {
     var self = this;
     self.src = src;
     if (z === undefined) {
@@ -152,7 +152,14 @@ function Shape(d,visible,zIndex) {
     Shape.ALL[self.hash] = self;
     Shape.HASH += 1;
     
-    self.d = d;
+    if (d === null) {
+        self.isFullScreen = true;
+        self.d = 'M0,0';    // Will be updated later
+    } else {
+        self.isFullScreen = false;
+        self.d = d;
+    }
+    
     if (zIndex === undefined) {
         zIndex = 1;
     }
@@ -343,8 +350,7 @@ function MetaActionStep(stateTree, state, action, actionType) {
 
 // Global variables
 
-var no_image = new Image('',1),
-    empty_space = new Shape('M0,0L512,0L512,343L0,343Z',true,0), // TODO: figure this out automatically
+var no_image = new Slide('',1),
     metaStates,
     config,
     metaActions,
@@ -467,6 +473,58 @@ function hideHotSpots () {
         var hotSpotRule = getCSSRule('svg#hotSpots path');
         hotSpotRule.style['fill-opacity'] = 0.001;
     });
+}
+
+// Preload images and resize viewports
+function loadImages () {
+    var stateTree,
+        state,
+        temp,
+        w = 0,
+        h = 0,
+        loadingImages = [];
+    for (stateTree in config) {
+        if (config.hasOwnProperty(stateTree)) {
+            for (state in config[stateTree].states) {
+                if (config[stateTree].states.hasOwnProperty(state)) {
+                    temp = new Image();
+                    loadingImages.push(temp);
+                    temp.onload = function () {
+                        var self = this;
+                        if (self.width > w) {
+                            w = self.width;
+                        }
+                        if (self.height > h) {
+                            h = self.height;
+                        }
+                        loadingImages.pop(loadingImages.indexOf(self));
+                    };
+                    temp.src = 'data/' + config[stateTree].states[state].image.src;
+                }
+            }
+        }
+    }
+    // Every two seconds, check if the images have finished loading...
+    function finish () {
+        var hash;
+        if (loadImages.length > 0) {
+            setTimeout(finish, 2000);
+        } else {
+            jQuery('.viewport').attr({
+                width : w,
+                height : h
+            });
+            for (hash in Shape.ALL) {
+                if (Shape.ALL.hasOwnProperty(hash) && Shape.ALL[hash].isFullScreen === true) {
+                    Shape.ALL[hash].d = 'M0,0L' + w + ',0L' + w + ',' + h + 'L0,' + h + 'Z';
+                    Shape.ALL[hash].setD(Shape.ALL[hash].extractSegments());
+                    Shape.ALL[hash].finalizeD();
+                }
+            }
+            jQuery('#loading').remove();
+        }
+    }
+    setTimeout(finish, 2000);
 }
 
 // config.js gets loaded next...

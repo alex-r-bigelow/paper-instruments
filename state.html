@@ -44,8 +44,8 @@
 </head>
 
 <body>
-	<div id="previewImages" width="512" height="343"></div>
-	<svg id="hotSpots" width="512" height="343"></svg>
+	<div id="previewImages" width="512" height="343" class="viewport"></div>
+	<svg id="hotSpots" width="512" height="343" class="viewport"></svg>
 	<div id="configPanel" class="collapsed">
 		<div id="collapseBar">
 			<img src="images/expand.png"/>
@@ -54,17 +54,24 @@
 			<label>State layers</label>
 			<img src="placeholders/stateDiagram.png"/>
 			<label>State permutations</label>
-			Color Edges By:
-			<select id="graphColorScheme">
-				<option value="metaState">Entities</option>
-				<option value="actionType">Action type</option>
-			</select>
-			<select id="graphEntities"></select>
-			<div id="graphContainer"></div>
+			<div id="graphContainer">
+				<span>
+					Color Scheme:
+					<select id="graphColorScheme">
+						<option value="metaState">Filter By Entity:</option>
+						<option value="actionType">Action type</option>
+					</select>
+					<select id="graphEntities"></select>
+				</span>
+				<div id="graphLegend"></div>
+				<div id="graphRegion"></div>
+			</div>
 			<label>Abstract process heat map</label>
 			<img src="placeholders/processHeatmap.png"/>
 		</div>
 	</div>
+	
+	<div id="loading"><div><div>Loading Images...</div></div></div>
 	
 	<script type="application/javascript" src="scripts/state.js"></script>
 </body>

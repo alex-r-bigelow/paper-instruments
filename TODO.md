@@ -1,10 +1,11 @@
 Need to:
-- Fix graph coloring mode switching problem
 - Implement a prototype!
 - Abstract heat map
+- Graph legend
+- Built-in Undo / Redo support?
 
 It would be nice to:
-- State Layers chart
+- State Layers chart (part of complete editor?)
 - Revisit cross-browser support
 - video slides
 - Three hotspot suppression techniques: delay, show on failure, or show while a key is pressed

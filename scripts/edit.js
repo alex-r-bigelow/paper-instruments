@@ -1,5 +1,7 @@
-/* globals jQuery, editHotSpots:true, getCSSRule, updatePreview */
+/* globals jQuery, getCSSRule, updatePreview, loadImages, Shape, Handle, jQueryRemoveSvgClass */
 "use strict";
+
+loadImages();
 
 // Handle collapsing / expanding the config panel
 jQuery("#collapseBar").on("click", function (event) {
@@ -40,7 +42,7 @@ jQuery("#pathString").on("change", function (event) {
 	    "d" : event.target.value
 	});
     }
-})
+});
 
 updatePreview();
 getCSSRule('svg#hotSpots path').style['fill-opacity'] = 0.3;

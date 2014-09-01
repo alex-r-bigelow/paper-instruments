@@ -44,10 +44,13 @@
 </head>
 
 <body>
-	<div id="previewImages" width="512" height="343"></div>
-	<svg id="hotSpots" width="512" height="343"></svg>
+	<div id="previewImages" width="512" height="343" class="viewport"></div>
+	<svg id="hotSpots" width="512" height="343" class="viewport"></svg>
+	
+	<div id="loading"><div><div>Loading Images...</div></div></div>
 	
 	<script type="application/javascript">
+		loadImages();
 		hideHotSpots();
 		updatePreview();
 	</script>
