@@ -9,7 +9,6 @@ var graph = {
     },
     linkLookup = {},
     visited = {},
-    metaSeeds = {},
     allMetaStates = {},
     allActionTypes = {},
     metaStateColors = [ '#1f77b4',  // d3.scale.category20, but parsed
@@ -30,10 +29,31 @@ var graph = {
                         '#98df8a',
                         '#ff9896',
                         '#c5b0d5'];
+function initialMetaActionIndices() {
+    var indices = {},
+        entity,
+        metaAction,
+        i;
+    for (entity in metaActions) {
+        if (metaActions.hasOwnProperty(entity)) {
+            indices[entity] = {};
+            for (metaAction in metaActions[entity]) {
+                if (metaActions[entity].hasOwnProperty(metaAction)) {
+                    indices[entity][metaAction] = {};
+                    for (i = 0; i < metaActions[entity][metaAction].length; i += 1) {
+                        indices[entity][metaAction][i] = 0;
+                    }
+                }
+            }
+        }
+    }
+    return indices;
+}
 
-function constructGraph (config, metaStates) {
+function constructGraph (config, metaStates, metaActionIndices) {
     var tempConfig,
         tempMetaStates,
+        tempMetaActionIndices,
         stateTree,
         stateString,
         comboString = "",
@@ -44,17 +64,20 @@ function constructGraph (config, metaStates) {
         events,
         eventString,
         targetComboString,
-        meta,
         entity,
-        i;
+        link,
+        metaAction,
+        pathNum,
+        step,
+        edge;
     
-    // Extract the starting states
+    // Extract the current states
     for (stateTree in config) {
         if (config.hasOwnProperty(stateTree)) {
             stateString = config[stateTree].currentState;
             currentStateStrings[stateTree] = stateString;
             if (config[stateTree].states.hasOwnProperty(stateString) === false) {
-                throw "Set tree '" + stateTree + "' to nonexistent state '" + stateString + "'";
+                throw "Set stateTree '" + stateTree + "' to nonexistent state '" + stateString + "'";
             }
             currentStates[stateTree] = config[stateTree].states[stateString];
             comboString += stateString;
@@ -66,13 +89,13 @@ function constructGraph (config, metaStates) {
         
         // ... add the graph node
         graph.nodes.push({
-                comboString : comboString,
-                states : currentStates,
-                stateStrings : currentStateStrings,
-                metaStates : {}
-            });
+            comboString : comboString,
+            states : currentStates,
+            stateStrings : currentStateStrings,
+            metaStates : {}
+        });
         
-        // ... copy our current meta states
+        // ... copy our current meta states into the node
         for (entity in metaStates) {
             if (metaStates.hasOwnProperty(entity)) {
                 graph.nodes[graph.nodes.length - 1].metaStates[entity] = metaStates[entity];
@@ -92,28 +115,49 @@ function constructGraph (config, metaStates) {
                     if (actions.hasOwnProperty(actionString)) {
                         // Don't follow actions if their hotSpots aren't even visible
                         if (actions[actionString].hotSpot.isVisible(config) === true) {
-                            // Collect all possible action types
+                            // Okay, everything in here deals with edges:
+                            link = {
+                                source : visited[comboString],
+                                target : null,
+                                metaActions : {},
+                                actionType : actions[actionString].actionType
+                            };
+                            
+                            // Note that we've seen this actionType
                             allActionTypes[actions[actionString].actionType] = true;
                             
-                            // Are we potentially starting a meta action?
-                            for (entity in metaActions) {
-                                if (metaActions.hasOwnProperty(entity)) {
-                                    for (meta in metaActions[entity]) {
-                                        if (metaActions[entity].hasOwnProperty(meta)) {
-                                            for (i = 0; i < metaActions[entity][meta].length; i += 1) {
-                                                if (stateTree === metaActions[entity][meta][i][0].stateTree &&
-                                                        config[stateTree].currentState === metaActions[entity][meta][i][0].state &&
-                                                        actionString === metaActions[entity][meta][i][0].action) {
-                                                    if (metaSeeds.hasOwnProperty(entity) === false) {
-                                                        metaSeeds[entity] = {};
+                            // Is this action next in any of our metaAction sequences?
+                            for (entity in metaActionIndices) {
+                                if (metaActionIndices.hasOwnProperty(entity)) {
+                                    for (metaAction in metaActionIndices[entity]) {
+                                        if (metaActionIndices[entity].hasOwnProperty(metaAction)) {
+                                            for (pathNum in metaActionIndices[entity][metaAction]) {
+                                                if (metaActionIndices[entity][metaAction].hasOwnProperty(pathNum)) {
+                                                    step = metaActions[entity][metaAction][pathNum][metaActionIndices[entity][metaAction][pathNum]];
+                                                    if (step.stateTree === stateTree &&
+                                                        step.state === currentStateStrings[stateTree] &&
+                                                        step.action === actionString) {
+                                                        
+                                                        // Store info about the metaAction and some context info in the edge
+                                                        if (link.metaActions.hasOwnProperty(entity) === false) {
+                                                            link.metaActions[entity] = {};
+                                                        }
+                                                        if (link.metaActions[entity].hasOwnProperty(metaAction) === false) {
+                                                            link.metaActions[entity][metaAction] = {};
+                                                        }
+                                                        link.metaActions[entity][metaAction][pathNum] = {
+                                                            pathNum : pathNum,
+                                                            isFirst : metaActionIndices[entity][metaAction][pathNum] === 0,
+                                                            isLast : metaActionIndices[entity][metaAction][pathNum] >=
+                                                                metaActions[entity][metaAction][pathNum].length - 1
+                                                        };
+                                                        // Increment the step in the sequence, restart if we reach the end
+                                                        if (link.metaActions[entity][metaAction][pathNum].isLast === true) {
+                                                            metaActionIndices[entity][metaAction][pathNum] = 0;
+                                                        } else {
+                                                            metaActionIndices[entity][metaAction][pathNum] += 1;
+                                                        }
                                                     }
-                                                    if (metaSeeds[entity].hasOwnProperty(meta) === false) {
-                                                        metaSeeds[entity][meta] = [];
-                                                    }
-                                                    metaSeeds[entity][meta].push({
-                                                        config : config,
-                                                        metaStates : metaStates
-                                                    });
                                                 }
                                             }
                                         }
@@ -124,26 +168,26 @@ function constructGraph (config, metaStates) {
                             events = actions[actionString].events;
                             for (eventString in events) {
                                 if (events.hasOwnProperty(eventString)) {
-                                    // deep clone config and metaStates; this allows effect functions
-                                    // to do anything they want to the config object
+                                    // deep clone our parameters; this allows effect functions
+                                    // to do anything they want to them
                                     tempConfig = jQuery.extend(true, {}, config);
                                     tempMetaStates = jQuery.extend(true, {}, metaStates);
+                                    tempMetaActionIndices = jQuery.extend(true, {}, metaActionIndices);
                                     
-                                    // apply the event to our clone and metaStates (with a null event object)
-                                    events[eventString](null, tempConfig, tempMetaStates);
+                                    // apply the event to our clones (with a null event object)
+                                    events[eventString](null, tempConfig, tempMetaStates, tempMetaActionIndices);
                                     
                                     // recurse
-                                    targetComboString = constructGraph(tempConfig, tempMetaStates);
+                                    targetComboString = constructGraph(tempConfig, tempMetaStates, tempMetaActionIndices);
                                     
-                                    // don't create self-edges in the graph
-                                    if (targetComboString !== comboString) {
-                                        // add the links to the new nodes
-                                        graph.links.push({
-                                            source : visited[comboString],
-                                            target : visited[targetComboString],
-                                            metaActions : {},
-                                            actionType : actions[actionString].actionType
-                                        });
+                                    // we don't want self-edges, or reduntant edges that we've already created
+                                    if (comboString !== targetComboString &&
+                                            linkLookup.hasOwnProperty(comboString + "->" + targetComboString) === false) {
+                                        // clone our link, and add it to the graph
+                                        edge = jQuery.extend(true, {}, link);
+                                        edge.target = visited[targetComboString];
+                                        graph.links.push(edge);
+                                        // add a lookup for the edge
                                         linkLookup[comboString + "->" + targetComboString] = graph.links[graph.links.length - 1];
                                     }
                                 }
@@ -156,100 +200,6 @@ function constructGraph (config, metaStates) {
     }
     
     return comboString;
-}
-
-// Flag the links that are part of a metaAction
-function flagMetaActions() {
-    var metaAction,
-        entity,
-        tempConfig,
-        tempMetaStates,
-        i,
-        j,
-        k,
-        source,
-        target,
-        success,
-        linksToFlag,
-        stateTree,
-        state,
-        action,
-        temp;
-    // loop through potential starting locations
-    for (entity in metaSeeds){
-        if (metaSeeds.hasOwnProperty(entity)) {
-            for (metaAction in metaSeeds[entity]) {
-                if (metaSeeds[entity].hasOwnProperty(metaAction)) {
-                    for (i = 0; i < metaSeeds[entity][metaAction].length; i += 1) {
-                        linksToFlag = [];
-                        success = true;
-                        tempConfig = metaSeeds[entity][metaAction][i].config;
-                        tempMetaStates = metaSeeds[entity][metaAction][i].metaStates;
-                        // loop through the potential steps TODO: may be a bug here if there's more than one sequence...
-                        for (j = 0; j < metaActions[entity][metaAction].length; j += 1) {
-                            for (k = 0; k < metaActions[entity][metaAction][j].length; k += 1) {
-                                state = tempConfig[metaActions[entity][metaAction][j][k].stateTree].currentState;
-                                
-                                // It's possible that we're not even in the right state to perform
-                                // this step...
-                                if (state !== metaActions[entity][metaAction][j][k].state) {
-                                    success = false;
-                                    break;
-                                }
-                                
-                                action = tempConfig[metaActions[entity][metaAction][j][k].stateTree]
-                                    .states[state].actions[metaActions[entity][metaAction][j][k].action];
-                                
-                                // if we can't see the hotSpot, the chain is broken;
-                                // there's no way to perform the next action in the meta action
-                                if (action.hotSpot.isVisible(tempConfig) === false) {
-                                    success = false;
-                                    break;
-                                } else {
-                                    // Get the source combo string
-                                    source = "";
-                                    for (stateTree in tempConfig) {
-                                        if (tempConfig.hasOwnProperty(stateTree)) {
-                                            source += tempConfig[stateTree].currentState;
-                                        }
-                                    }
-                                    // Apply an event (just pick one - they SHOULD have the same
-                                    // side effects)
-                                    for (temp in action.events) {
-                                        if (action.events.hasOwnProperty(temp)) {
-                                            action.events[temp](null, tempConfig, tempMetaStates);
-                                            break;
-                                        }
-                                    }
-                                    // Get the target combo string
-                                    target = "";
-                                    for (stateTree in tempConfig) {
-                                        if (tempConfig.hasOwnProperty(stateTree)) {
-                                            target += tempConfig[stateTree].currentState;
-                                        }
-                                    }
-                                    if (target !== source) {
-                                        linksToFlag.push(source + "->" + target);
-                                    }
-                                }
-                            }
-                        }
-                        if (success === true) {
-                            // Mark all the relevant links that they belong
-                            // to the meta action
-                            for (j = 0; j < linksToFlag.length; j += 1) {
-                                temp = linkLookup[linksToFlag[j]].metaActions;
-                                if (temp.hasOwnProperty(entity) === false) {
-                                    temp[entity] = {};
-                                }
-                                temp[entity][metaAction] = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 // Show the interface:
@@ -301,7 +251,12 @@ function updateGraphColors () {
         node = d3.select("#nodes").selectAll("circle"),
         edgeLegend = [],
         nodeLegend = [],
-        legendScale;
+        legendScale,
+        state,
+        metaAction,
+        domain,
+        range,
+        i;
     // Set up our color scheme, and draw our legend
     if (colorScheme === 'actionType') {
         colors = d3.scale.category10();
@@ -310,11 +265,9 @@ function updateGraphColors () {
         edgeLegend = Object.keys(allActionTypes);
         legendScale = d3.scale.ordinal().domain(edgeLegend).rangePoints([0,legendHeight],1);
     } else {
-        var state,
-            action,
-            domain = ['No Meta Action','No State'],
-            range = ['#c7c7c7','#7f7f7f'],
-            i = 0;
+        domain = ['No Meta Action','No State'];
+        range = ['#c7c7c7','#7f7f7f'];
+        i = 0;
         for (state in allMetaStates[entity]) {
             if (allMetaStates[entity].hasOwnProperty(state)) {
                 domain.push(state);
@@ -327,10 +280,10 @@ function updateGraphColors () {
             }
         }
         i = 0;
-        for (action in metaActions[entity]) {
-            if (metaActions[entity].hasOwnProperty(action)) {
-                domain.push(action);
-                edgeLegend.push(action);
+        for (metaAction in metaActions[entity]) {
+            if (metaActions[entity].hasOwnProperty(metaAction)) {
+                domain.push(metaAction);
+                edgeLegend.push(metaAction);
                 range.push(metaActionColors[i]);
                 i += 1;
                 if (i >= metaActionColors.length) {
@@ -347,11 +300,16 @@ function updateGraphColors () {
         if (colorScheme === 'actionType') {
             return colors(d.actionType);
         } else {
-            var metaAction;
+            var metaAction,
+                pathNum,
+                foundColor = false;
+            console.log(d.metaActions);
             for (metaAction in d.metaActions[entity]) {
                 if (d.metaActions[entity].hasOwnProperty(metaAction)) {
                     return colors(metaAction);
-                    // TODO: what if an action is part of more than one metaAction arc for an entity?
+                    // TODO: encoding problem: we need to somehow encode:
+                    // 1) multiple overlapping steps for different or same (different pathNums) metaActions
+                    // 2) which step in the process this is (start, stop, intermediate)
                 }
             }
             return colors('No Meta Action');
@@ -609,8 +567,7 @@ function initGui() {
 
 loadImages();
 hideHotSpots();
-constructGraph(jQuery.extend(true, {}, config), jQuery.extend(true, {}, metaStates));
-flagMetaActions();
+constructGraph(jQuery.extend(true, {}, config), jQuery.extend(true, {}, metaStates), initialMetaActionIndices());
 updateAll();
 initGraph();
 initMatrix();

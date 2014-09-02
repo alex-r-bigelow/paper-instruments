@@ -1,4 +1,4 @@
-/* globals jQuery, d3, Image, getCSSRule, document, window */
+/* globals jQuery, d3, Image, getCSSRule, document, window, setTimeout */
 "use strict";
 
 // funcitons for adding / removing SVG classes:
@@ -340,12 +340,11 @@ function DummyAction(mask) {
     self.isMask = true;
 }
 
-function MetaActionStep(stateTree, state, action, actionType) {
+function MetaActionStep(stateTree, state, action) {
     var self = this;
     self.stateTree = stateTree;
     self.state = state;
     self.action = action;
-    self.actionType = actionType;
 }
 
 // Global variables
@@ -432,19 +431,18 @@ function updatePreview(updateCallback) {
     previewHotSpots.attr("d", function (d) { return d.hotSpot.d; })
         .attr("id", function (d) { return "HotSpot" + d.hotSpot.hash; });
     
-    if (Shape.SELECTED !== null) {
-        previewHotSpots.each(function (d) {
-            var h = jQuery("#HotSpot" + d.hotSpot.hash);
-            if (d.isMask) {
-                jQueryAddSvgClass(h, "mask");
-            }
+    previewHotSpots.each(function (d) {
+        var h = jQuery("#HotSpot" + d.hotSpot.hash),
+            eventString;
+        if (d.isMask) {
+            jQueryAddSvgClass(h, "mask");
+        }
+        
+        if (Shape.SELECTED !== null) {
             h.on('mousedown', function (event) {
                 Shape.ALL[d.hotSpot.hash].select(event);
             });
-        });
-    } else {
-        previewHotSpots.each(function (d) {
-            var eventString;
+        } else {
             for (eventString in d.events) {
                 if (d.events.hasOwnProperty(eventString)) {
                     jQuery('#HotSpot' + d.hotSpot.hash).on(eventString, function (event) {
@@ -455,8 +453,10 @@ function updatePreview(updateCallback) {
                     }); // jshint ignore:line
                 }
             }
-        });
-    }
+        }
+    });
+    
+    
     
     previewHotSpots.exit().remove();
 }
@@ -466,12 +466,12 @@ function hideHotSpots () {
     jQuery(window).on("keydown", function (event) {
         var hotSpotRule = getCSSRule('svg#hotSpots path');
         if (event.which === 32) {   // 32 is the key code for SPACE
-            hotSpotRule.style['fill-opacity'] = 0.3;
+            hotSpotRule.style['fill-opacity'] = 0.001;
         }
     });
     jQuery(window).on("keyup", function (event) {
         var hotSpotRule = getCSSRule('svg#hotSpots path');
-        hotSpotRule.style['fill-opacity'] = 0.001;
+        hotSpotRule.style['fill-opacity'] = 0.25;
     });
 }
 
@@ -498,7 +498,7 @@ function loadImages () {
                             h = self.height;
                         }
                         loadingImages.pop(loadingImages.indexOf(self));
-                    };
+                    }; // jshint ignore:line
                     temp.src = 'data/' + config[stateTree].states[state].image.src;
                 }
             }
