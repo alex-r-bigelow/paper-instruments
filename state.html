@@ -51,8 +51,8 @@
 			<img src="images/expand.png"/>
 		</div>
 		<div id="configContents">
-			<label>State layers</label>
-			<img src="placeholders/stateDiagram.png"/>
+			<!--<label>State layers</label>
+			<img src="placeholders/stateDiagram.png"/>-->
 			<label>State permutations</label>
 			<div id="graphContainer">
 				<span>
@@ -67,11 +67,15 @@
 				<div id="graphRegion"></div>
 			</div>
 			<label>Abstract process heat map</label>
-			<img src="placeholders/processHeatmap.png"/>
+			<div>
+				<p>How many full cycles of Entity+Action B exist downstream from a full cycle of Entity+Action A?</p>
+				<p>- Need to be able to include / exclude overlapping cycles?</p>
+				<p>- When comparing tools, need option for normalizing the heat map?</p>
+			</p></div>
 		</div>
 	</div>
 	
-	<div id="loading"><div><div>Loading Images...</div></div></div>
+	<div id="loading"><div><div>Loading...</div></div></div>
 	
 	<script type="application/javascript" src="scripts/state.js"></script>
 </body>
