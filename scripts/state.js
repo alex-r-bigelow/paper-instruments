@@ -114,7 +114,7 @@ function constructGraph (config, metaStates, metaActionIndices) {
                 for (actionString in actions) {
                     if (actions.hasOwnProperty(actionString)) {
                         // Don't follow actions if their hotSpots aren't even visible
-                        if (actions[actionString].hotSpot.isVisible(config) === true) {
+                        if (actions[actionString].hotSpot.isVisible(config, metaStates) === true) {
                             // Okay, everything in here deals with edges:
                             link = {
                                 source : visited[comboString],
@@ -134,6 +134,7 @@ function constructGraph (config, metaStates, metaActionIndices) {
                                             for (pathNum in metaActionIndices[entity][metaAction]) {
                                                 if (metaActionIndices[entity][metaAction].hasOwnProperty(pathNum)) {
                                                     step = metaActions[entity][metaAction][pathNum][metaActionIndices[entity][metaAction][pathNum]];
+                                                    
                                                     if (step.stateTree === stateTree &&
                                                         step.state === currentStateStrings[stateTree] &&
                                                         step.action === actionString) {
@@ -151,6 +152,7 @@ function constructGraph (config, metaStates, metaActionIndices) {
                                                             isLast : metaActionIndices[entity][metaAction][pathNum] >=
                                                                 metaActions[entity][metaAction][pathNum].length - 1
                                                         };
+                                                        
                                                         // Increment the step in the sequence, restart if we reach the end
                                                         if (link.metaActions[entity][metaAction][pathNum].isLast === true) {
                                                             metaActionIndices[entity][metaAction][pathNum] = 0;
@@ -303,7 +305,6 @@ function updateGraphColors () {
             var metaAction,
                 pathNum,
                 foundColor = false;
-            console.log(d.metaActions);
             for (metaAction in d.metaActions[entity]) {
                 if (d.metaActions[entity].hasOwnProperty(metaAction)) {
                     return colors(metaAction);
@@ -390,7 +391,8 @@ function initGraph() {
         width,
         height,
         style,
-        svg;
+        svg,
+        jGraphRegion;
     
     if (bounds.width === 0) {
         return;
@@ -514,6 +516,13 @@ function initGraph() {
             node.attr("transform", function(d) { 
                 return "translate(" + d.x + "," + d.y + ")";
             });
+    });
+    
+    // Finally, scroll to the center of the viewport
+    jGraphRegion = jQuery('#graphRegion');
+    jGraphRegion.animate({
+        scrollTop : height / 2 - jGraphRegion.innerHeight() / 2,
+        scrollLeft : width / 2 - jGraphRegion.innerWidth() / 2
     });
 }
 

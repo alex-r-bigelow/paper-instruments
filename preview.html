@@ -47,7 +47,14 @@
 	<div id="previewImages" width="512" height="343" class="viewport"></div>
 	<svg id="hotSpots" width="512" height="343" class="viewport"></svg>
 	
-	<div id="loading"><div><div>Loading...</div></div></div>
+	<div id="loading">
+		<div id="loadingDialog">
+			<div id="loadingText">Loading...</div>
+			<div id="loadingBar">
+				<div></div>
+			</div>
+		</div>
+	</div>
 	
 	<script type="application/javascript">
 		loadImages();

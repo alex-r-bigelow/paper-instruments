@@ -364,7 +364,8 @@ function updatePreview(updateCallback) {
         state,
         action,
         mask,
-        temp;
+        temp,
+        hotSpotHashes = {};
     
     if (updateCallback === undefined) {
         updateCallback = updatePreview;
@@ -376,19 +377,26 @@ function updatePreview(updateCallback) {
         if (config.hasOwnProperty(stateTree)) {
             currentComboString += config[stateTree].currentState;
             
+            if (config[stateTree].hasOwnProperty('currentState') === false) {
+                throw 'You must specify an initial state for stateTree "' + stateTree + '"';
+            }
             state = config[stateTree].states[config[stateTree].currentState];
             images.push(state.image);
             for (action in state.actions) {
                 if (state.actions.hasOwnProperty(action)) {
-                    if (state.actions[action].hotSpot.isVisible(config) === true) {
+                    if (state.actions[action].hotSpot.isVisible(config, metaStates) === true &&
+                            hotSpotHashes.hasOwnProperty(state.actions[action].hotSpot.hash) === false) {
                         actions.push(state.actions[action]);
+                        hotSpotHashes[state.actions[action].hotSpot.hash] = true;
                     }
                 }
             }
             for (mask in state.masks) {
                 if (state.masks.hasOwnProperty(mask)) {
-                    if (state.masks[mask].isVisible(config) === true) {
+                    if (state.masks[mask].isVisible(config, metaStates) === true &&
+                            hotSpotHashes.hasOwnProperty(state.masks[mask].hash) === false) {
                         actions.push(new DummyAction(state.masks[mask]));
+                        hotSpotHashes[state.masks[mask].hash] = true;
                     }
                 }
             }
@@ -466,12 +474,12 @@ function hideHotSpots () {
     jQuery(window).on("keydown", function (event) {
         var hotSpotRule = getCSSRule('svg#hotSpots path');
         if (event.which === 32) {   // 32 is the key code for SPACE
-            hotSpotRule.style['fill-opacity'] = 0.001;
+            hotSpotRule.style['fill-opacity'] = 0.25;
         }
     });
     jQuery(window).on("keyup", function (event) {
         var hotSpotRule = getCSSRule('svg#hotSpots path');
-        hotSpotRule.style['fill-opacity'] = 0.25;
+        hotSpotRule.style['fill-opacity'] = 0.001;
     });
 }
 
@@ -482,6 +490,7 @@ function loadImages () {
         temp,
         w = 0,
         h = 0,
+        numImages = null,
         loadingImages = [];
     for (stateTree in config) {
         if (config.hasOwnProperty(stateTree)) {
@@ -489,6 +498,7 @@ function loadImages () {
                 if (config[stateTree].states.hasOwnProperty(state)) {
                     temp = new Image();
                     loadingImages.push(temp);
+                    numImages += 1;
                     temp.onload = function () {
                         var self = this;
                         if (self.width > w) {
@@ -497,6 +507,10 @@ function loadImages () {
                         if (self.height > h) {
                             h = self.height;
                         }
+                        if (numImages === null) {
+                            numImages = loadingImages.length;
+                        }
+                        jQuery("#loadingBar div").css('width', (100 - (loadingImages.length / numImages * 100)) + '%');
                         loadingImages.pop(loadingImages.indexOf(self));
                     }; // jshint ignore:line
                     temp.src = 'data/' + config[stateTree].states[state].image.src;
