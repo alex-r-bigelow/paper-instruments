@@ -379,6 +379,8 @@ function updatePreview(updateCallback) {
             
             if (config[stateTree].hasOwnProperty('currentState') === false) {
                 throw 'You must specify an initial state for stateTree "' + stateTree + '"';
+            } else if (config[stateTree].states.hasOwnProperty(config[stateTree].currentState) === false) {
+                throw "Attempted to set stateTree '" + stateTree + "' to nonexistent state '" + config[stateTree].currentState + "'";
             }
             state = config[stateTree].states[config[stateTree].currentState];
             images.push(state.image);

@@ -77,7 +77,7 @@ function constructGraph (config, metaStates, metaActionIndices) {
             stateString = config[stateTree].currentState;
             currentStateStrings[stateTree] = stateString;
             if (config[stateTree].states.hasOwnProperty(stateString) === false) {
-                throw "Set stateTree '" + stateTree + "' to nonexistent state '" + stateString + "'";
+                throw "Attempted to set stateTree '" + stateTree + "' to nonexistent state '" + stateString + "'";
             }
             currentStates[stateTree] = config[stateTree].states[stateString];
             comboString += stateString;
