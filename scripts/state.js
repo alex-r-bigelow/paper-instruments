@@ -268,7 +268,7 @@ function updateGraphColors () {
         legendScale = d3.scale.ordinal().domain(edgeLegend).rangePoints([0,legendHeight],1);
     } else {
         domain = ['No Meta Action','No State'];
-        range = ['#c7c7c7','#7f7f7f'];
+        range = ['rgba(100,100,100,0.25)','#7f7f7f'];
         i = 0;
         for (state in allMetaStates[entity]) {
             if (allMetaStates[entity].hasOwnProperty(state)) {
@@ -385,14 +385,23 @@ function updateGraphColors () {
         .attr("fill", "black");
 }
 
+function centerGraph() {
+    var graphRegion = jQuery('#graphRegion'),
+        svg = jQuery('#graphRegion svg');
+    
+    graphRegion.animate({
+        scrollTop : svg.height() / 2 - graphRegion.innerHeight() / 2,
+        scrollLeft : svg.width() / 2 - graphRegion.innerWidth() / 2
+    });
+}
+
 function initGraph() {
     // Set up the graph svg element
     var bounds = document.getElementById("configContents").getBoundingClientRect(),
         width,
         height,
         style,
-        svg,
-        jGraphRegion;
+        svg;
     
     if (bounds.width === 0) {
         return;
@@ -416,7 +425,7 @@ function initGraph() {
     
     // Start the layout algorithm
     var force = d3.layout.force()
-        .charge(-480)
+        .charge(-100)
         .linkDistance(60)
         .size([width, height])
         .nodes(graph.nodes)
@@ -519,11 +528,7 @@ function initGraph() {
     });
     
     // Finally, scroll to the center of the viewport
-    jGraphRegion = jQuery('#graphRegion');
-    jGraphRegion.animate({
-        scrollTop : height / 2 - jGraphRegion.innerHeight() / 2,
-        scrollLeft : width / 2 - jGraphRegion.innerWidth() / 2
-    });
+    centerGraph();
 }
 
 // Visualize the process matrix:
@@ -549,6 +554,19 @@ function initGui() {
         }
         initGraph();
         initMatrix();
+    });
+    
+    // Handle maximizing the graphContainer
+    jQuery('#maximizeButton').on('click', function (event) {
+        var graphContainer = jQuery('#graphContainer');
+        if (graphContainer.hasClass('maximized')) {
+            graphContainer.removeClass('maximized');
+            jQuery('#maximizeButton').text('Fill Screen');
+        } else {
+            graphContainer.addClass('maximized');
+            jQuery('#maximizeButton').text('Back');
+        }
+        centerGraph();
     });
     
     // Populate the graph entity menu

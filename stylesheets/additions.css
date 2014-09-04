@@ -1,6 +1,10 @@
 html, body {
     height : 100%;
 }
+select {
+    display: inline-block;
+    width:150px;
+}
 select[disabled] {
     border-color: #ddd;
     color: #ddd;
@@ -46,10 +50,10 @@ div#configPanel {
     right:0px;
     top:0px;
     height:99%;
-    width:612px;
+    width:724px;
     z-index:2;
     border: 1px solid #ddd;
-    background-color:rgba(255,255,255,0.75);
+    background-color:rgba(255,255,255,0.9);
 }
 div#configPanel.collapsed {
     width:12px;
@@ -70,9 +74,17 @@ div#configContents {
     position: absolute;
     top:0px;
     left:12px;
-    width:600px;
+    width:700px;
     height:100%;
     overflow:scroll;
+}
+
+div#configContents h3 {
+    padding-top:25px;
+    padding-left:25px;
+}
+div#configContents span, p {
+    padding-left: 50px;
 }
 div#configPanel.collapsed div#configContents {
     width:0px;
@@ -81,33 +93,39 @@ div#configContents img {
     width:100%;
 }
 
+div#configContents button {
+    position: absolute;
+    right:0px;
+}
 div#graphContainer {
+    position:relative;
     width:100%;
     height:50%;
+    background:#fff;
 }
-div#graphContainer span {
+div#graphContainer.maximized {
+    position:fixed;
+    left:0%;
+    top:0%;
     width:100%;
-    height:5%;
-    padding: 5px;
-}
-div#graphContainer span select {
-    display: inline-block;
-    width:150px;
-    margin-bottom: 0;
+    height:100%;
+    z-index:99;
 }
 div#graphContainer #graphLegend {
     position: absolute;
-    width:150px;
-    height:45%;
+    width:25%;
+    top:100px;
+    bottom:0px;
     overflow-x: auto;
     overflow-y: hidden;
     border:1px solid #ddd;
 }
 div#graphContainer #graphRegion {
     position: absolute;
-    left:150px;
-    right:0px;
-    height:45%;
+    left:25%;
+    right:0%;
+    top:100px;
+    bottom:0px;
     overflow:scroll;
     border:1px solid #ddd;
 }
@@ -126,7 +144,7 @@ div#loading {
     position: relative;
     width:100%;
     height:100%;
-    z-index:2;
+    z-index:100;
 }
 div#loadingDialog {
     position:absolute;
