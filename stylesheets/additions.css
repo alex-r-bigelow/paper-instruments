@@ -26,7 +26,7 @@ svg#hotSpots {
     position: absolute;
     left: 0px;
     top: 0px;
-    z-index: 1;
+    z-index: 3;
 }
 svg#hotSpots path {
     fill: #66c2a5;
@@ -51,7 +51,7 @@ div#configPanel {
     top:0px;
     height:99%;
     width:724px;
-    z-index:2;
+    z-index:4;
     border: 1px solid #ddd;
     background-color:rgba(255,255,255,0.9);
 }

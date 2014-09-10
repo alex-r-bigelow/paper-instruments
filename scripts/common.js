@@ -499,8 +499,6 @@ function loadImages () {
             for (state in config[stateTree].states) {
                 if (config[stateTree].states.hasOwnProperty(state)) {
                     temp = new Image();
-                    loadingImages.push(temp);
-                    numImages += 1;
                     temp.onload = function () {
                         var self = this;
                         if (self.width > w) {
@@ -515,6 +513,8 @@ function loadImages () {
                         jQuery("#loadingBar div").css('width', (100 - (loadingImages.length / numImages * 100)) + '%');
                         loadingImages.pop(loadingImages.indexOf(self));
                     }; // jshint ignore:line
+                    loadingImages.push(temp);
+                    numImages += 1;
                     temp.src = 'data/' + config[stateTree].states[state].image.src;
                 }
             }
@@ -523,9 +523,9 @@ function loadImages () {
     // Every two seconds, check if the images have finished loading...
     function finish () {
         var hash;
-        if (loadImages.length > 0) {
-            setTimeout(finish, 2000);
-        } else {
+        //if (loadingImages.length > 0) {
+        //    setTimeout(finish, 2000);
+        //} else {
             jQuery('.viewport').attr({
                 width : w,
                 height : h
@@ -538,7 +538,7 @@ function loadImages () {
                 }
             }
             jQuery('#loading').remove();
-        }
+        //}
     }
     setTimeout(finish, 2000);
 }
