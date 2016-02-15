@@ -181,3 +181,10 @@ div#loadingBar div {
     top:0px;
     background: #ddd;
 }
+div#helpText {
+    /*background-color:rgba(102, 194, 165, 0.4);*/
+    position:absolute;
+    bottom:50px;
+    text-align:center;
+    width:100%;
+}

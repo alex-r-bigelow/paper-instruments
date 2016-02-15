@@ -46,7 +46,12 @@
 <body>
 	<div id="previewImages" width="512" height="343" class="viewport"></div>
 	<svg id="hotSpots" width="512" height="343" class="viewport"></svg>
-	
+	<div id="helpText">
+        Hold Space To See Hotspots<br/><br/>
+        (mouseovers, clicking, right-clicking, and shift-<br/>
+        clicking are just some of the possible actions)
+    </div>
+    
 	<div id="loading">
 		<div id="loadingDialog">
 			<div id="loadingText">Loading...</div>
@@ -55,7 +60,7 @@
 			</div>
 		</div>
 	</div>
-	
+    
 	<script type="application/javascript">
 		loadImages();
 		hideHotSpots();

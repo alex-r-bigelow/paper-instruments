@@ -1,8 +1,8 @@
-/* globals jQuery, d3, Image, getCSSRule, document, window, setTimeout */
-"use strict";
+/*globals jQuery, d3, Image, getCSSRule, document, window, setTimeout*/
 
 // funcitons for adding / removing SVG classes:
-function jQueryAddSvgClass (queryObj, classname) {
+function jQueryAddSvgClass(queryObj, classname) {
+    "use strict";
     var existingClasses = queryObj.attr('class');
     if (existingClasses !== undefined) {
         if (existingClasses.split(" ").indexOf(classname) === -1) {
@@ -16,7 +16,8 @@ function jQueryAddSvgClass (queryObj, classname) {
         });
     }
 }
-function jQueryRemoveSvgClass (queryObj, classname) {
+function jQueryRemoveSvgClass(queryObj, classname) {
+    "use strict";
     var classes = queryObj.attr('class').split(" ");
     classes.pop(classes.indexOf(classname));
     if (classes.length === 0) {
@@ -30,7 +31,8 @@ function jQueryRemoveSvgClass (queryObj, classname) {
 
 // Classes used in previews
 
-function Slide(src,z) {
+function Slide(src, z) {
+    "use strict";
     var self = this;
     self.src = src;
     if (z === undefined) {
@@ -40,6 +42,7 @@ function Slide(src,z) {
 }
 
 function Handle(shape, x, y, hIndex) {
+    "use strict";
     var self = this,
         domHandle;
     
@@ -53,7 +56,7 @@ function Handle(shape, x, y, hIndex) {
     self.hIndex = hIndex;
     
     // jQuery doesn't support creating SVG nodes...
-    domHandle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    domHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     domHandle.setAttribute('id', 'Handle' + self.hash);
     document.getElementById('hotSpots').appendChild(domHandle);
     // Now set the other attributes
@@ -68,6 +71,7 @@ function Handle(shape, x, y, hIndex) {
 Handle.ALL = {};
 Handle.HASH = 1;
 Handle.clearAll = function () {
+    "use strict";
     var hash;
     for (hash in Handle.ALL) {
         if (Handle.ALL.hasOwnProperty(hash)) {
@@ -79,6 +83,7 @@ Handle.clearAll = function () {
 };
 
 Handle.prototype.drag = function (event) {
+    "use strict";
     var self = this,
         origin = {
             X : event.clientX - self.x,
@@ -106,6 +111,7 @@ Handle.prototype.drag = function (event) {
     return true;
 };
 Handle.prototype.moveTo = function (pos) {
+    "use strict";
     var self = this,
         segments = self.shape.extractSegments(),
         s,
@@ -145,7 +151,8 @@ Handle.prototype.moveTo = function (pos) {
     }
 };
 
-function Shape(d,visible,zIndex) {
+function Shape(d, visible, zIndex) {
+    "use strict";
     var self = this;
     
     self.hash = Shape.HASH;
@@ -169,7 +176,7 @@ function Shape(d,visible,zIndex) {
     } else if (typeof visible === 'boolean') {
         self.isVisible = function () { return visible; };
     } else if (typeof visible !== 'function') {
-            throw "visible parameter must be a boolean or function!";
+        throw "visible parameter must be a boolean or function!";
     } else {
         self.isVisible = visible;
     }
@@ -178,10 +185,12 @@ Shape.ALL = {};
 Shape.HASH = 1;
 Shape.SELECTED = null;
 Shape.findShape = function (domTarget) {
+    "use strict";
     var hash = Number(domTarget.getAttribute('id').substring(7));
     return Shape.ALL[hash];
 };
 Shape.prototype.extractSegments = function () {
+    "use strict";
     var self = this,
         numbers = self.d.replace(new RegExp("[a-zA-Z]", "g"), ",").split(","),
         letterString = self.d.replace(new RegExp("[0-9]", "g"), ""),
@@ -231,6 +240,7 @@ Shape.prototype.extractSegments = function () {
     return segments;
 };
 Shape.prototype.setD = function (segments) {
+    "use strict";
     var self = this,
         s,
         l;
@@ -255,6 +265,7 @@ Shape.prototype.setD = function (segments) {
     }
 };
 Shape.prototype.finalizeD = function () {
+    "use strict";
     var self = this;
     jQuery('#pathString').val(self.d);
     jQuery('#HotSpot' + self.hash).attr({
@@ -262,6 +273,7 @@ Shape.prototype.finalizeD = function () {
     });
 };
 Shape.prototype.initHandles = function () {
+    "use strict";
     var self = this,
         segments = self.extractSegments(),
         i,
@@ -279,6 +291,7 @@ Shape.prototype.initHandles = function () {
     }
 };
 Shape.prototype.select = function (event) {
+    "use strict";
     var self = this,
         hash,
         origins = {},
@@ -300,10 +313,10 @@ Shape.prototype.select = function (event) {
             return true;
         },
         up = function (event) {
-                document.removeEventListener("mousemove", move);
-                document.removeEventListener("mouseup", up);
-                
-                return move(event);
+            document.removeEventListener("mousemove", move);
+            document.removeEventListener("mouseup", up);
+
+            return move(event);
         };
     
     if (Shape.SELECTED !== null && Shape.SELECTED !== -1) {
@@ -334,6 +347,7 @@ Shape.prototype.select = function (event) {
 };
 
 function DummyAction(mask) {
+    "use strict";
     var self = this;
     self.hotSpot = mask;
     self.events = {};
@@ -341,6 +355,7 @@ function DummyAction(mask) {
 }
 
 function MetaActionStep(stateTree, state, action) {
+    "use strict";
     var self = this;
     self.stateTree = stateTree;
     self.state = state;
@@ -349,7 +364,7 @@ function MetaActionStep(stateTree, state, action) {
 
 // Global variables
 
-var no_image = new Slide('',1),
+var no_image = new Slide('', 1),
     metaStates,
     config,
     metaActions,
@@ -358,6 +373,7 @@ var no_image = new Slide('',1),
 // Function that handles the preview - by default this gets called whenever state changes,
 // but I can replace that callback...
 function updatePreview(updateCallback) {
+    "use strict";
     var images = [],
         actions = [],
         stateTree,
@@ -365,7 +381,9 @@ function updatePreview(updateCallback) {
         action,
         mask,
         temp,
-        hotSpotHashes = {};
+        hotSpotHashes = {},
+        previewImages,
+        previewHotSpots;
     
     if (updateCallback === undefined) {
         updateCallback = updatePreview;
@@ -411,20 +429,19 @@ function updatePreview(updateCallback) {
     });
     
     // Update the preview images
-    var previewImages = d3.select('#previewImages')
+    previewImages = d3.select('#previewImages')
         .selectAll("img")
         .data(images);
     
     previewImages.enter().append("img");
     
     previewImages.attr("src", function (i) {
-                if (i.src !== '') {
-                    return 'data/' + i.src;
-                } else {
-                    return '';
-                }
-            })
-        .attr("style", function (i) { return "z-index:"+i.zIndex; });
+        if (i.src !== '') {
+            return 'data/' + i.src;
+        } else {
+            return '';
+        }
+    }).attr("style", function (i) { return "z-index:" + i.zIndex; });
     
     // Update the hotSpots
     
@@ -432,7 +449,7 @@ function updatePreview(updateCallback) {
     // still attached, so I manually clear the hotspots first:
     document.getElementById("hotSpots").innerHTML = "";
     
-    var previewHotSpots = d3.select("#hotSpots")
+    previewHotSpots = d3.select("#hotSpots")
         .selectAll("path")
         .data(actions);
     
@@ -457,7 +474,7 @@ function updatePreview(updateCallback) {
                 if (d.events.hasOwnProperty(eventString)) {
                     jQuery('#HotSpot' + d.hotSpot.hash).on(eventString, function (event) {
                         event.preventDefault();
-                        d.events[eventString](event, config, metaStates);
+                        d.events[event.type](event, config, metaStates);
                         updateCallback();
                         return true;
                     }); // jshint ignore:line
@@ -466,13 +483,12 @@ function updatePreview(updateCallback) {
         }
     });
     
-    
-    
     previewHotSpots.exit().remove();
 }
 
 // Hotspot showing / hiding depending on whether space is pressed
-function hideHotSpots () {
+function hideHotSpots() {
+    "use strict";
     jQuery(window).on("keydown", function (event) {
         var hotSpotRule = getCSSRule('svg#hotSpots path');
         if (event.which === 32) {   // 32 is the key code for SPACE
@@ -486,7 +502,8 @@ function hideHotSpots () {
 }
 
 // Preload images and resize viewports
-function loadImages () {
+function loadImages() {
+    "use strict";
     var stateTree,
         state,
         temp,
@@ -521,23 +538,23 @@ function loadImages () {
         }
     }
     // Every two seconds, check if the images have finished loading...
-    function finish () {
+    function finish() {
         var hash;
         //if (loadingImages.length > 0) {
         //    setTimeout(finish, 2000);
         //} else {
-            jQuery('.viewport').attr({
-                width : w,
-                height : h
-            });
-            for (hash in Shape.ALL) {
-                if (Shape.ALL.hasOwnProperty(hash) && Shape.ALL[hash].isFullScreen === true) {
-                    Shape.ALL[hash].d = 'M0,0L' + w + ',0L' + w + ',' + h + 'L0,' + h + 'Z';
-                    Shape.ALL[hash].setD(Shape.ALL[hash].extractSegments());
-                    Shape.ALL[hash].finalizeD();
-                }
+        jQuery('.viewport').attr({
+            width : w,
+            height : h
+        });
+        for (hash in Shape.ALL) {
+            if (Shape.ALL.hasOwnProperty(hash) && Shape.ALL[hash].isFullScreen === true) {
+                Shape.ALL[hash].d = 'M0,0L' + w + ',0L' + w + ',' + h + 'L0,' + h + 'Z';
+                Shape.ALL[hash].setD(Shape.ALL[hash].extractSegments());
+                Shape.ALL[hash].finalizeD();
             }
-            jQuery('#loading').remove();
+        }
+        jQuery('#loading').remove();
         //}
     }
     setTimeout(finish, 2000);
